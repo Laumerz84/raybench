@@ -92,7 +92,7 @@ canvas#c{display:block;touch-action:none}
 .gtop{display:flex;align-items:baseline;gap:8px}
 .gtop output{margin-left:auto;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
 .gopt input[type=range]{display:block;width:100%;margin:8px 0 4px;accent-color:var(--accent)}
-.panel{position:absolute;top:58px;left:12px;width:300px;max-height:calc(100% - 72px);display:flex;flex-direction:column;background:var(--card);color:var(--ink);border:1px solid var(--btn-line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
+.panel{position:absolute;top:58px;left:12px;width:330px;max-height:calc(100% - 72px);display:flex;flex-direction:column;background:var(--card);color:var(--ink);border:1px solid var(--btn-line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);overflow:hidden}
 .phead{display:flex;align-items:center;gap:8px;padding:8px 8px 8px 14px;cursor:grab;touch-action:none;user-select:none;border-bottom:1px solid var(--btn-line)}
 .phead.dragging{cursor:grabbing}
 .panel.collapsed .phead{border-bottom:0}
@@ -100,7 +100,7 @@ canvas#c{display:block;touch-action:none}
 .pcol{padding:4px;border-color:transparent;background:transparent}
 .pcol svg{width:16px;height:16px;transition:transform .15s}
 .panel.collapsed .pcol svg{transform:rotate(-90deg)}
-.pbody{overflow:auto;padding:0 14px 14px;min-height:0}
+.pbody{overflow-y:auto;overflow-x:hidden;padding:0 14px 14px;min-height:0}
 .panel.collapsed .pbody{display:none}
 .valbox{margin-left:auto;display:inline-flex;align-items:center;gap:4px}
 .valbox input{width:78px;font:inherit;font-size:13px;text-align:right;color:var(--ink);background:var(--btn);border:1px solid var(--btn-line);border-radius:6px;padding:3px 6px;font-variant-numeric:tabular-nums}
@@ -120,7 +120,7 @@ canvas#c{display:block;touch-action:none}
 .field input[type=range]{width:100%;margin:0;accent-color:var(--accent)}
 .field select{width:100%;font:inherit;color:var(--ink);background:var(--btn);border:1px solid var(--btn-line);border-radius:8px;padding:6px 8px}
 .field .seg{display:flex}
-.field .seg button{flex:1;justify-content:center;padding-left:4px;padding-right:4px}
+.field .seg button{flex:1 1 0;min-width:0;justify-content:center;padding-left:3px;padding-right:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .note{font-size:12px;line-height:1.45;color:var(--muted);margin:12px 0 0}
 .eqs{margin-top:16px;padding-top:12px;border-top:1px solid var(--btn-line)}
 .eqs h3{font-size:13px;font-weight:600;margin:0}
@@ -267,7 +267,7 @@ button svg{width:16px;height:16px;flex-shrink:0}
         <option value="eclipse">Blood moon (lunar eclipse)</option>
         <option value="blackhole">Black hole lensing</option>
         <option value="empty">Empty bench</option>
-        <optgroup label="For music (try ♪ Pulse to sound)"><option value="ribbons">Braided Ribbons</option><option value="caustic">Caustic lotus</option><option value="neon">Neon skyline</option><option value="lattice">Laser lattice</option><option value="bloom">Lens bloom</option><option value="crystals">Crystal garden</option><option value="beacon">Six Searchlights</option></optgroup>
+        <optgroup label="For music (try ♪ Pulse to sound)"><option value="ribbons">Braided Ribbons</option><option value="caustic">Caustic lotus</option><option value="neon">Neon skyline</option><option value="lattice">Laser lattice</option><option value="bloom">Lens bloom</option><option value="crystals">Crystal garden</option><option value="beacon">Six Searchlights</option><option value="sunburst">Prism sunburst</option><option value="trefoil">Rainbow lotus</option><option value="hexstar">Hexagram crystal</option><option value="cross">Cross of light</option></optgroup>
         <optgroup label="Career mode"><option value="lvl:plant">Level 1 · Feed the plant</option><option value="lvl:darkroom">Level 2 · Darkroom</option><option value="lvl:white">Level 3 · Make white</option><option value="lvl:neon">Level 4 · Neon sign</option><option value="lvl:bounce">Level 5 · Bounce off the wall</option><option value="lvl:spear">Level 6 · Spearfishing</option><option value="lvl:burn">Level 7 · Burning glass</option><option value="lvl:tir">Level 8 · No mirrors allowed</option><option value="lvl:door">Level 9 · The colour door</option><option value="lvl:fringes">Level 10 · Seven fringes</option><option value="lvl:closeslit">Level 11 · Close a slit</option><option value="lvl:retro">Level 12 · Return to sender</option><option value="lvl:mauve">Level 13 · Perkin’s mauve</option><option value="lvl:shadow">Level 14 · Shadow puppets</option><option value="lvl:grinder">Level 16 · The lens grinder's test</option><option value="lvl:corner">Level 17 · Around the corner</option><option value="lvl:whisper">Level 18 · Whispering room</option><option value="lvl:crossed">Level 19 · Crossed out</option><option value="lvl:twist">Level 20 · Twist without loss</option><option value="lvl:rainbowslits">Level 21 · Rainbow from two slits</option><option value="lvl:lighthouse">Level 22 · Lighthouse</option><option value="lvl:ghost">Level 23 · Ghost reflection</option><option value="lvl:barber">Level 24 · Barber’s mirror</option><option value="lvl:lloyd">Level 25 · Mirror twin</option><option value="lvl:eye">Level 26 · Fix the eye</option><option value="lvl:pinhole">Level 27 · Smallest pinhole</option><option value="lvl:invisible">Level 28 · Invisible fish</option><option value="lvl:corpuscles">Level 29 · Newton’s corpuscles</option><option value="lvl:zigzag">Level 30 · Zigzag</option><option value="lvl:lineup">Level 31 · Line-up</option><option value="lvl:seefish">Level 32 · See the fish</option><option value="lvl:goggles">Level 33 · Pearl diver’s goggles</option><option value="lvl:lunar">Level 34 · Lunar Society</option><option value="lvl:divermirror">Level 35 · Diver’s mirror</option><option value="lvl:neonpass">Level 36 · The password lamp</option><option value="lvl:secret">Level 37 · Hooke’s secret</option><option value="lvl:catseye">Level 38 · Cat’s eye</option><option value="lvl:feeding">Level 39 · Feeding time</option><option value="lvl:stained">Level 40 · Stained glass</option><option value="lvl:gap">Level 41 · The gap that isn't</option><option value="lvl:heavy">Level 42 · Heavy letters</option><option value="lvl:lantern">Level 43 · Magic lantern</option><option value="lvl:archimedes">Level 44 · Archimedes’ mirrors</option><option value="lvl:maze">Level 45 · Laser maze</option><option value="lvl:fermat">Level 46 · Fermat’s race</option><option value="lvl:north">Level 47 · North light</option><option value="lvl:remote">Level 48 · TV remote</option><option value="lvl:pipe">Level 49 · Light pipe</option><option value="lvl:sidestep">Level 50 · Sideways step</option><option value="lvl:morebend">Level 51 · More bend, less rainbow</option><option value="lvl:tightfocus">Level 52 · Tight focus</option><option value="lvl:spectacles">Level 53 · Broken spectacles</option><option value="lvl:microscope">Level 54 · Microscope</option><option value="lvl:upsidedown">Level 55 · Upside down</option><option value="lvl:hooketel">Level 56 · Hooke’s telescope</option><option value="lvl:bubble">Level 57 · Bubble lens</option><option value="lvl:powers">Level 58 · Powers of ten</option><option value="lvl:twinprism">Level 59 · Twin prism</option><option value="lvl:headlight">Level 60 · Car headlight</option><option value="lvl:gallery">Level 61 · Whispering gallery</option><option value="lvl:drop">Level 62 · Descartes’ drop</option><option value="lvl:infinity">Level 63 · Infinity mirror</option><option value="lvl:pickline">Level 64 · Pick a line</option><option value="lvl:herschel">Level 66 · Herschel’s thermometer</option><option value="lvl:cleanroom">Level 67 · Clean room</option><option value="lvl:sharpbright">Level 68 · Sharp or bright</option><option value="lvl:violet">Level 69 · Dim violet wins</option><option value="lvl:rainbowkey">Level 70 · Rainbow key</option><option value="lvl:greenhouse">Level 71 · Greenhouse power</option><option value="lvl:hidedark">Level 73 · Hide in the dark</option><option value="lvl:twocandles">Level 74 · Hooke’s two candles</option><option value="lvl:brewster">Level 75 · Brewster’s angle</option><option value="lvl:rings">Level 76 · Newton’s rings</option><option value="lvl:thinfilm">Level 77 · Thinnest film</option><option value="lvl:bubblefilm">Level 78 · Soap bubble</option><option value="lvl:peacock">Level 79 · Peacock feather</option><option value="lvl:wideopen">Level 80 · Wide open</option><option value="lvl:spectroscope">Level 84 · Pocket spectroscope</option><option value="lvl:dull">Level 85 · Diamond goes dull</option><option value="lvl:salt">Level 87 · Salt on the lens</option><option value="lvl:kaleidoscope">Level 88 · Kaleidoscope</option><option value="lvl:fringecombo">Level 89 · Fringe combination</option><option value="lvl:fibre">Level 92 · Colour-coded fibre</option><option value="lvl:norainbow">Level 93 · No rainbow allowed</option><option value="lvl:lensing">Level 94 · A mass as a magnifier</option><option value="lvl:polvault">Level 95 · Polarized vault</option><option value="lvl:beetle">Level 96 · Beetle’s mirror</option><option value="lvl:aroundhole">Level 97 · Around the black hole</option><option value="lvl:deepdive">Level 98 · Deep dive</option><option value="lvl:shipwreck">Level 99 · Shipwreck</option><option value="lvl:twojobs">Level 100 · Two jobs, one lamp</option><option value="lvl:barcode">Level 101 · The barcode scanner</option><option value="lvl:hotmirror">Level 104 · Lantern hot mirror</option><option value="lvl:fourier">Level 106 · Fourier lens</option><option value="lvl:eight">Level 109 · Figure of eight</option><option value="lvl:eraser">Level 110 · Erase the which-way</option><option value="lvl:einstein">Level 111 · Einstein ring</option><option value="lvl:totality">Level 112 · Total eclipse</option><option value="lvl:observatory">Level 114 · Observatory</option><option value="lvl:speedtrap">Level 115 · Speed trap</option><option value="lvl:foucault">Level 116 · Foucault’s mirror</option><option value="lvl:postoffice">Level 117 · Black hole post office</option><option value="lvl:bench">Level 119 · The whole bench</option><option value="lvl:finale">Level 120 · Newton’s last experiment</option></optgroup>
         <optgroup label="Saved scenes" id="savedOpts" hidden></optgroup>
       </select>
@@ -282,7 +282,7 @@ button svg{width:16px;height:16px;flex-shrink:0}
       <button id="reset">Reset scene</button>
     </div>
     <div class="group live">
-      <select id="ptrLight" title="The light your pointer gives off over the menus" aria-label="Pointer light"></select><input id="ptrBright" type="range" min="0.05" max="1.5" step="0.05" value="1" title="Pointer light brightness" aria-label="Pointer light brightness" style="width:70px;accent-color:#6bb8ff"><button id="ptrGear" type="button" aria-pressed="false" title="Pointer light settings">⚙</button>
+      <span id="ptrHold" hidden><select id="ptrLight" title="The light your pointer gives off over the menus" aria-label="Pointer light"></select><input id="ptrBright" type="range" min="0.05" max="1.5" step="0.05" value="1" title="Pointer light brightness" aria-label="Pointer light brightness" style="width:120px;accent-color:#6bb8ff"></span><button id="ptrGear" type="button" aria-pressed="false" title="Pointer light: the light your pointer gives off over the menus">✦ Pointer</button>
       <button id="ssBtn" type="button" title="Screensaver: the bench fills the screen with nothing else on it (Esc to leave)">⛶ Screensaver</button>
       <button id="liveBtn" type="button" aria-pressed="false" title="Make the light pulse with whatever is playing on your computer (share system audio, or use a microphone)">♪ Pulse to sound</button>
     </div>
@@ -497,10 +497,14 @@ function rayRGB(lam, white) {
 
 /* ---------- shapes ---------- */
 const sag = (c, y) => c * y * y / (1 + Math.sqrt(Math.max(0, 1 - c * c * y * y)));
+// A prism is a triangle, apex first. A symmetric one is its apex angle A and side length s (apex along o.a, centroid at
+// o.x, o.y); any other triangle keeps its corners in o.tv (the prism's own frame, about its centroid).
 function prismGeo(o) {
   const u = [Math.cos(o.a), Math.sin(o.a)], v = [-u[1], u[0]];
-  const h = o.s * Math.cos(o.A / 2), b = 2 * o.s * Math.sin(o.A / 2);
   const P = (lx, ly) => [o.x + u[0] * lx + v[0] * ly, o.y + u[1] * lx + v[1] * ly];
+  if (o.tv) { const t = o.tv, bx = t[1][0] - t[2][0], by = t[1][1] - t[2][1], b = Math.hypot(bx, by) || 1;
+    return { u, v, b, h: Math.abs((t[0][0] - t[2][0]) * by - (t[0][1] - t[2][1]) * bx) / b, p: t.map(q => P(q[0], q[1])) }; }
+  const h = o.s * Math.cos(o.A / 2), b = 2 * o.s * Math.sin(o.A / 2);
   return { u, v, h, b, p: [P(2 * h / 3, 0), P(-h / 3, b / 2), P(-h / 3, -b / 2)] };
 }
 function inPoly(p, x, y) {
@@ -662,7 +666,7 @@ function normObj(o) {
     o.t = Math.max(o.t, lensTmin(o));
   }
   if (o.type === 'mirror') o.bend = LEVEL && LEVEL.flat ? 0 : Math.max(-0.95, Math.min(0.95, o.bend || 0));      // a level can keep its mirrors flat
-  if (o.type === 'prism') o.A = Math.max(5 * Math.PI / 180, Math.min(179.9 * Math.PI / 180, o.A));
+  if (o.type === 'prism' && !o.tv) o.A = Math.max(5 * Math.PI / 180, Math.min(179.9 * Math.PI / 180, o.A));
   if (o.type === 'rect' && 'h2' in o && !(o.h2 > 0)) delete o.h2;
   if (o.type === 'shape') {
     if (o.geo === 'circle') o.h = o.w;
@@ -1542,8 +1546,11 @@ function simPart(phase, part = 0, parts = 1, slitHits = null, gpuJobs = null) {
           // one source ray and the light it splits into; a generator, so on the GPU path it can wait for flights
           const fam = (function* () {
           const [ox, oy, dx, dy] = r, Ei = r.length > 4 ? r[4] : E0, sq = Math.sqrt(Ei * e), Er = Ei * e * jE(J0), kids = [];
-          const path = gpu ? yield* traceG(P, ox, oy, dx, dy, lam, lamPx, jScale(J0, sq, sq), 0, far, recorder(b, idx, meta, true), kids, 0, Er, T, true)
-            : trace(P, ox, oy, dx, dy, lam, lamPx, jScale(J0, sq, sq), 0, far, recorder(b, idx, meta, true), kids, 0, Er, T);
+          // src.reflCut: the faintest reflection worth tracing, as a share of the ray (default 1e-5: thin-film accuracy); the
+          // tracer's thresholds are all relative to the energy it is given, so it is given Er scaled to match
+          const Ek = Er * (src.reflCut > 1e-5 ? src.reflCut / 1e-5 : 1);
+          const path = gpu ? yield* traceG(P, ox, oy, dx, dy, lam, lamPx, jScale(J0, sq, sq), 0, far, recorder(b, idx, meta, true), kids, 0, Ek, T, true)
+            : trace(P, ox, oy, dx, dy, lam, lamPx, jScale(J0, sq, sq), 0, far, recorder(b, idx, meta, true), kids, 0, Ek, T);
           let fg = famL[idx]; if (!fg) famL[idx] = fg = [];
           let dm = null; if (run === 0) draws.push(dm = { p: path, c, a: alpha, dash, lam, idx, nr: rays.length, si });
           fg.push({ id: '', run, p: path, d: dm, lam, lamPx, bw: bwl, w: tw(path) });
@@ -1553,8 +1560,8 @@ function simPart(phase, part = 0, parts = 1, slitHits = null, gpuJobs = null) {
             if (guard === 80 && T) queue.forEach(q => T.lost(jE(q.J)));
             const k = queue.shift(), more = [], full = k.full ?? k.sig;
             const kb = k.how === 'd' ? `${k.pb}>d${k.sig}@${k.pidx}` : `${k.pb}>r${k.sig}`, kidx = k.how === 'd' ? k.fan : k.pidx;
-            const kp = gpu ? yield* traceG(P, k.ox, k.oy, k.dx, k.dy, lam, lamPx, k.J, k.opl, far, recorder(kb, kidx, meta, false, full), more, k.depth, Er, T, true)
-              : trace(P, k.ox, k.oy, k.dx, k.dy, lam, lamPx, k.J, k.opl, far, recorder(kb, kidx, meta, false, full), more, k.depth, Er, T);
+            const kp = gpu ? yield* traceG(P, k.ox, k.oy, k.dx, k.dy, lam, lamPx, k.J, k.opl, far, recorder(kb, kidx, meta, false, full), more, k.depth, Ek, T, true)
+              : trace(P, k.ox, k.oy, k.dx, k.dy, lam, lamPx, k.J, k.opl, far, recorder(kb, kidx, meta, false, full), more, k.depth, Ek, T);
             for (const m of more) m.full = full + m.sig;
             const fr = jE(k.J) / (Ei * e);                             // share of the whole ray (both polarizations)
             const fe = jE(k.J) / Er;                                   // share of this ray's light (this color and polarization)
@@ -2432,6 +2439,109 @@ function makeScene(name, W, H) {
       }
       return L;
     }
+  if (name === 'sunburst') {
+    // made for Pulse to sound: twelve narrow white beams fan out from the middle like the spokes of a wheel, each into its
+    // own dense-flint prism on a ring. Each prism is turned to minimum deviation for its beam (inside the glass the light
+    // runs parallel to the base), so it bends every beam the same way round by about 67°, violet most: twelve rainbow
+    // blades sweep round like a pinwheel and each lands on the ring of screens as a spectrum. The light is p-polarized: it
+    // meets the faces at 63°, close to Brewster's angle (61° for this glass), so almost none is reflected and the blades stay
+    // clean. Twelvefold symmetric; in Dance the prisms turn and the blades swing round the ring.
+    const N = 12, R = 0.19 * u, sz = 0.085 * u, A = Math.PI / 3, D = 2 * Math.asin(sellN('sf11', 550) * Math.sin(A / 2)) - A, RS = 0.45 * u;
+    const L = [];
+    for (let k = 0; k < N; k++) { const t = -Math.PI / 2 + k * 2 * Math.PI / N, c = Math.cos(t), sn = Math.sin(t);
+      L.push({ type: 'source', x: cx + 0.05 * u * c, y: cy + 0.05 * u * sn, a: t, w: 0.012 * u, mode: 'beam', white: true, lam: 532, rays: 5, pol: 'linear', chi: 90, reflCut: 2e-3 },
+        { type: 'prism', x: cx + R * c, y: cy + R * sn, s: sz, a: t + D / 2 - Math.PI / 2, A, mat: 'sf11' }); }
+    for (let k = 0; k < 2 * N; k++) { const a0 = k * Math.PI / N, a1 = a0 + Math.PI / N;     // a 24-sided ring of screens
+      L.push({ type: 'screen', x1: cx + RS * Math.cos(a0), y1: cy + RS * Math.sin(a0), x2: cx + RS * Math.cos(a1), y2: cy + RS * Math.sin(a1), coh: false }); }
+    return L;
+  }
+  if (name === 'trefoil') {
+    // made for Pulse to sound: a rainbow lotus. Two wide white beams, mirror images of each other, slant down into a deep
+    // concave mirror (a cup, as in Caustic lotus). On the way each crosses a thin 30° dense-flint prism at minimum deviation,
+    // which leaves every colour still a wide parallel beam but turned by its own amount (violet most, about 1.5° more than
+    // red). In the cup each colour folds into its own cusp-shaped caustic (a nephroid), turned by its own angle, so each
+    // cusp is drawn as a fan of rainbow-edged petals, the two mirror-image cusps opening side by side.
+    const R = u * 0.48, C = [cx, cy + H * 0.45 - R], k0 = Math.sqrt(1 - 0.95 ** 2);
+    const L = [{ type: 'mirror', x1: cx - 0.95 * R, y1: C[1] + k0 * R, x2: cx + 0.95 * R, y2: C[1] + k0 * R, bend: -0.95, showF: false }];
+    const A = Math.PI / 6, n = sellN('sf11', 550), D = 2 * Math.asin(n * Math.sin(A / 2)) - A, i = (A + D) / 2, w = 0.34 * u;
+    for (const sg of [-1, 1]) {
+      const pslant = sg * 0.42, out = Math.PI / 2 - pslant, ain = out - sg * D;          // leaving the prism aimed at the cup's centre
+      const dP = 0.62 * u, P = [C[0] - Math.cos(out) * dP, C[1] - Math.sin(out) * dP], sz = w / Math.cos(i) * 1.12;
+      // turned for minimum deviation: inside, the light runs parallel to the base; bent towards +ain for sg = 1, −ain for −1
+      L.push({ type: 'prism', x: P[0], y: P[1], s: sz, a: sg > 0 ? ain + D / 2 - Math.PI / 2 : ain - D / 2 + Math.PI / 2, A, mat: 'sf11' },
+        { type: 'source', x: P[0] - Math.cos(ain) * 0.2 * u, y: P[1] - Math.sin(ain) * 0.2 * u, a: ain, w, mode: 'beam', white: true, lam: 532, rays: 70, pol: 'linear', chi: 90, reflCut: 2e-3 });
+    }
+    return L;
+  }
+  if (name === 'cross') {
+    // made for Pulse to sound (Bach, especially): Calvary, in light. Every beam has one place to go.
+    // - The cross is light alone: a vertical and a horizontal white beam cross at its heart. Each arm ends in a flared glass
+    //   serif (a cross pattée) capped by a mirror, so the light runs out through the glass, turns back and runs through the
+    //   heart into the opposite arm, back and forth: it never leaves the cross.
+    // - The heavens: four dense-flint lenses in an arc above, each with its own white beam from on high, each set so its
+    //   focus falls on the heart of the cross: four cones of light converge on the cross from heaven, rainbow-edged where
+    //   the glass brings each colour to a focus at its own distance (blue first).
+    // - The lands: beyond the heart the four cones fall on the earth, each onto its own hollow green glass hill, which takes in
+    //   the light through its thin green shell and fills with green light; the dark ground and the hill of Calvary beneath
+    //   the cross receive it.
+    // The cross, its light and the land are fixed, so in Dance only the lenses of heaven sway and the glory moves.
+    const O = [cx, cy - 0.06 * u], yG = O[1] + 0.37 * u, Lu = 0.15 * u, Ls = 0.15 * u, Ld = yG - O[1] - 0.06 * u;
+    const bw = 0.03 * u, fl = 0.045 * u, h0 = 0.022 * u, h1 = 0.04 * u, gap = 0.003 * u;
+    const solid = (P, surf, mat, ex = {}) => { const x = P.reduce((a, q) => a + q[0], 0) / P.length, y = P.reduce((a, q) => a + q[1], 0) / P.length, r = Math.max(...P.map(q => Math.hypot(q[0] - x, q[1] - y)));
+      return { type: 'thing', shape: 'custom', pts: P.map(q => [(q[0] - x) / r, (q[1] - y) / r]), surf, x, y, size: r, a: 0, mat: mat || 'bk7', locked: true, ...ex }; };
+    const L = [];
+    // the arms' serifs and mirrors: (angle, length) — up, right, down (to the hill), left
+    for (const [ang, len] of [[-Math.PI / 2, Lu], [0, Ls], [Math.PI / 2, Ld], [Math.PI, Ls]]) {
+      const c = Math.cos(ang), sn = Math.sin(ang), W_ = (al, ac) => [O[0] + c * al - sn * ac, O[1] + sn * al + c * ac];
+      L.push(solid([W_(len - fl, -h0), W_(len, -h1), W_(len, h1), W_(len - fl, h0)], 'glass', 'sf11'));
+      const m1 = W_(len + gap, -h1), m2 = W_(len + gap, h1);
+      L.push({ type: 'mirror', x1: m1[0], y1: m1[1], x2: m2[0], y2: m2[1], bend: 0, showF: false, locked: true });
+    }
+    // the two beams of the cross, from its heart (each runs both ways, between its two mirrors)
+    const beam = a => ({ type: 'source', x: O[0], y: O[1], a, w: bw, mode: 'beam', white: true, lam: 532, rays: 7, pol: 'none', chi: 0, reflCut: 0.1, locked: true, bare: true });   // (the faint glass reflections, a few % each, are not followed: they too would only run up and down the arms)
+    L.push(beam(-Math.PI / 2), beam(0));
+    // the heavens: lenses at 24° and 46° either side of straight up, focused on the heart
+    const Rh = 0.36 * u, nd = MATS.sf11.nd;
+    for (const ph of [-46, -24, 24, 46]) {
+      const t = (-90 + ph) * Math.PI / 180, dirA = t + Math.PI, D = 0.1 * u, k = 1 / ((nd - 1) * Rh);
+      const lens = { type: 'lens', x: 0, y: 0, a: dirA, D, t: 0, c1: k / 2, c2: -k / 2, mat: 'sf11', showF: false }; normObj(lens);
+      const F = lensF(lens), back = lens.t / 2 + F.bfd; lens.x = O[0] - Math.cos(dirA) * back; lens.y = O[1] - Math.sin(dirA) * back;
+      L.push(lens, { type: 'source', x: lens.x - Math.cos(dirA) * 0.08 * u, y: lens.y - Math.sin(dirA) * 0.08 * u, a: dirA, w: 0.8 * D, mode: 'beam', white: true, lam: 532, rays: 29,
+        pol: 'none', chi: 0, reflCut: 0.3, bare: true, locked: true });   // (glancing reflections off the hills are not followed)
+    }
+    // the lands: dark ground with the hill of Calvary under the cross's foot, and four green glass hills where the cones land
+    const yF = O[1] + Ld + gap + 0.004 * u, gpts = [];
+    for (let i = 0; i <= 80; i++) { const x = cx - 1.2 * W / 2 + i / 80 * 1.2 * W, d = (x - cx) / (0.085 * u);
+      gpts.push([x, yG - (yG - yF) * Math.exp(-d * d * 1.6)]); }
+    gpts.push([cx + 0.6 * W, cy + H], [cx - 0.6 * W, cy + H]);
+    L.push(solid(gpts, 'dark'));
+    for (const ph of [-46, -24, 24, 46]) { const x = O[0] + (yG - O[1]) * Math.tan(ph * Math.PI / 180);
+      // a hollow dome of green glass standing on the ground: the light comes through its thin shell green, and falls green
+      // inside it onto the ground, where it ends
+      const hh = 0.075 * u, hill = { type: 'shape', geo: 'semi', made: 'glass', mat: 'bk7', x, y: yG - hh / 2 + 0.002 * u, a: 0, w: 0.19 * u, h: hh, n: 6, inner: 0.45, round: 0, hollow: true, shell: 0.006 * u,
+        tint: TINTS.green.map(q => [...q]), tintName: 'green', tintL: 0.6, locked: true };   // a deep green: the tint's strength per 0.6 mm
+      normObj(hill); L.push(hill); }
+    return L;
+  }
+  if (name === 'hexstar') {
+    // made for Pulse to sound: one hexagonal crystal of dense flint and six white beams. Each beam goes in through the middle
+    // of one face and out through the middle of the face two along: those two faces meet at 60°, so to the light they are a
+    // 60° prism, and the beam is aimed at its minimum deviation (inside the glass it runs from one face's middle to the
+    // other's) — the path light takes through the hexagonal ice crystals of high cloud to make the 22° halo round the Sun.
+    // Inside, the six paths cross as a six-pointed star; outside, the six beams leave bent by 67° as rainbow fans, turning
+    // like a pinwheel. The light is p-polarized, near Brewster's angle at the faces, so stray reflections stay faint.
+    const Rv = 0.17 * u, A = Math.PI / 3, n = sellN('sf11', 550), D = 2 * Math.asin(n * Math.sin(A / 2)) - A, i = (A + D) / 2;
+    const L = [{ type: 'shape', geo: 'poly', n: 6, made: 'glass', mat: 'sf11', x: cx, y: cy, a: 0, w: 2 * Rv, h: 2 * Rv, inner: 0.45, round: 0, hollow: false, shell: 0.02 * u }];
+    normObj(L[0]);
+    const mid = j => { const f = -Math.PI / 3 + j * Math.PI / 3, r = Rv * Math.cos(Math.PI / 6); return [cx + r * Math.cos(f), cy + r * Math.sin(f), Math.cos(f), Math.sin(f)]; };
+    for (let j = 0; j < 6; j++) {
+      const [mx, my, nx, ny] = mid(j), [qx, qy] = mid(j + 2), tl = Math.hypot(qx - mx, qy - my), tx = (qx - mx) / tl, ty = (qy - my) / tl;
+      const sg = Math.sign(-nx * ty + ny * tx) || 1, ca = Math.cos(sg * i), sa = Math.sin(sg * i);       // the inward normal turned by i towards the path inside
+      const dx = -nx * ca + ny * sa, dy = -nx * sa - ny * ca, d = 0.22 * u;
+      L.push({ type: 'source', x: mx - dx * d, y: my - dy * d, a: Math.atan2(dy, dx), w: 0.01 * u, mode: 'beam', white: true, lam: 532, rays: 5, pol: 'linear', chi: 90, reflCut: 2e-3 });
+    }
+    return L;
+  }
   if (name === 'beacon') {
     // made for Pulse to sound: six searchlights in the corners of a hexagonal frame of screens. Each shines a narrow beam into
     // its own dense-flint prism close by, set at minimum deviation and turned like the vane of a pinwheel, so the beam is bent
@@ -9877,8 +9987,10 @@ function fieldsFor(o) {
       break;
     case 'prism':
       matFields(o, F);
-      F.push({ t: 'num', label: 'Apex angle', unit: '°', get: () => deg(o.A), set: v => o.A = v * Math.PI / 180, slider: true, min: 5, max: 179.9 });
-      F.push(lenField('Side length', () => o.s, v => o.s = v));
+      F.push({ t: 'num', label: 'Apex angle', unit: '°', get: () => deg(o.A), set: v => { o.A = v * Math.PI / 180; delete o.tv; }, slider: true, min: 5, max: 179.9 });
+      F.push(lenField('Side length', () => o.s, v => { o.s = v; delete o.tv; }));
+      F.push({ t: 'read', label: 'Corners', val: () => prismAngles(o).map(a => dg(a)).join(' · ') + (o.tv ? '' : Math.abs(o.A - Math.PI / 3) < 1e-6 ? ' (equilateral)' : ' (symmetric)') },
+        { t: 'button', label: 'Make it equilateral', run: () => { const g = prismGeo(o); o.s = (Math.hypot(g.p[0][0] - g.p[1][0], g.p[0][1] - g.p[1][1]) + Math.hypot(g.p[0][0] - g.p[2][0], g.p[0][1] - g.p[2][1]) + Math.hypot(g.p[1][0] - g.p[2][0], g.p[1][1] - g.p[2][1])) / 3; o.A = Math.PI / 3; delete o.tv; dirty = true; refreshInspector(); } });
       F.push(...posFields(o), rotField(o));
       break;
     case 'ball':
@@ -11388,6 +11500,7 @@ function render() {
       ctx.beginPath(); ctx.moveTo(sx - R * 0.5, sy - R * 0.5); ctx.lineTo(sx + R * 0.5, sy + R * 0.5); ctx.stroke(); ctx.restore();
     } else if (o.type === 'earth' || o.type === 'moon' || o.type === 'grav' || isSun(o)) {        // drawn in screen pixels (see discPath)
       ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); if (isSun(o)) ctx.globalAlpha = Math.min(1, LIGHT_FADE); (o.type === 'earth' ? drawEarth : o.type === 'moon' ? drawMoon : o.type === 'grav' ? drawGrav : drawSun)(drawnBig(o)); if (isSun(o) && LIGHT_FADE > 1) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = LIGHT_FADE - 1; drawSun(o); } ctx.restore();
+    } else if (o.type === 'source' && o.bare && sel !== o) {          // a display scene's light: only its light is shown
     } else if (o.type === 'source') {
       const c = srcGlow(o), R = 26 * k;
       const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, R); g.addColorStop(0, css(c, 0.45)); g.addColorStop(1, css(c, 0));
@@ -11415,6 +11528,7 @@ function render() {
     for (const m of MULTI) { if (m === sel) continue;
       const B = localBox(m) ? boxHandles(m).box : null; ctx.beginPath();
       if (B) B.map(p => scr(...p)).forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)), ctx.closePath();
+      else if (m.type === 'prism') prismGeo(m).p.map(p => scr(...p)).forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)), ctx.closePath();
       else if (isLine(m)) { ctx.moveTo(...scr(m.x1, m.y1)); ctx.lineTo(...scr(m.x2, m.y2)); }
       else { const c = scr(...centerOf(m)); ctx.arc(c[0], c[1], 16, 0, 2 * Math.PI); }
       ctx.stroke(); }
@@ -11424,17 +11538,19 @@ function render() {
   if (sel) {
     ctx.setLineDash([4 * k, 4 * k]); ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = k;
     // in screen pixels, computed in double precision, so handles stay exact however far from the world origin
-    const scr = (x, y) => [x * V.z + V.x, y * V.z + V.y], HS = handles(sel), hs = HS.map(h => scr(h.x, h.y)), c0 = isLine(sel) || HS.box ? null : scr(sel.x, sel.y);
+    const scr = (x, y) => [x * V.z + V.x, y * V.z + V.y], HS = handles(sel), hs = HS.map(h => scr(h.x, h.y)), c0 = isLine(sel) || HS.box || HS.stem ? null : scr(sel.x, sel.y);
     ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.setLineDash([4, 4]); ctx.lineWidth = 1;
     if (c0) for (const h of hs) { const dx = c0[0] - h[0], dy = c0[1] - h[1], L = Math.hypot(dx, dy), m = Math.min(1, 4 * (W + H) / (L || 1));
       ctx.beginPath(); ctx.moveTo(h[0] + dx * m, h[1] + dy * m); ctx.lineTo(h[0], h[1]); ctx.stroke(); }
     if (HS.box) { const B = HS.box.map(p => scr(...p)), t = scr(...HS.top), r = HS.find(h => h.k === 'r');
       ctx.strokeStyle = 'rgba(140,190,255,.75)'; ctx.beginPath(); B.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.closePath(); ctx.stroke();
       if (r) { ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(...t); ctx.lineTo(...scr(r.x, r.y)); ctx.stroke(); } }
+    if (HS.stem) { ctx.setLineDash([]); ctx.strokeStyle = 'rgba(140,190,255,.75)'; ctx.beginPath(); ctx.moveTo(...scr(...HS.stem[0])); ctx.lineTo(...scr(...HS.stem[1])); ctx.stroke(); }
     ctx.setLineDash([]);
     HS.forEach((H, i) => { const h = hs[i]; ctx.beginPath(); ctx.strokeStyle = '#161d28'; ctx.lineWidth = 2;
       if (H.k === 'c' || H.k === 'e') { const z = H.k === 'c' ? 5 : 4; ctx.rect(h[0] - z, h[1] - z, 2 * z, 2 * z); ctx.fillStyle = '#fff'; }
       else if (H.k === 'r') { ctx.arc(h[0], h[1], 6.5, 0, Math.PI * 2); ctx.fillStyle = '#7fd7a0'; }
+      else if (H.k === 'v') { ctx.arc(h[0], h[1], 6, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.arc(h[0], h[1], 2.4, 0, Math.PI * 2); ctx.fillStyle = '#5b9cf0'; }
       else if (H.k === 'n') { ctx.moveTo(h[0], h[1] - 7); ctx.lineTo(h[0] + 7, h[1]); ctx.lineTo(h[0], h[1] + 7); ctx.lineTo(h[0] - 7, h[1]); ctx.closePath(); ctx.fillStyle = '#ffcf6e'; }
       else { ctx.arc(h[0], h[1], 6, 0, Math.PI * 2); ctx.fillStyle = '#fff'; }
       ctx.fill(); ctx.stroke(); });
@@ -11699,13 +11815,12 @@ function drawGrav(o) {
    from the centre, Alt turns snapping off), drag an edge to stretch one way, and drag the knob above the box to rotate.
    Lenses, prisms and mirrors also get nodes for their own shape: each lens face's curvature, a prism's apex angle, a
    mirror's bend. Parts that only scale as a whole (objects, prisms, spheres, lenses) resize proportionally from corners. */
-const BOX_FREE = { rect: 1, medium: 1, shape: 1, thing: 1, prism: 1, ball: 1 }, BOX_UNIFORM = {};   // Shift keeps proportions for all of them
+const BOX_FREE = { rect: 1, medium: 1, shape: 1, thing: 1, ball: 1 }, BOX_UNIFORM = {};   // Shift keeps proportions for all of them
 function localBox(o) {                       // the part's extent in its own frame (origin o.x, o.y; x along o.a)
   switch (o.type) {
     case 'rect': case 'medium': case 'shape': { const h = Math.max(o.h, o.h2 || 0); return [-o.w / 2, -h / 2, o.w / 2, h / 2]; }
     case 'thing': { const P = (o.shape === 'custom' && o.pts ? o.pts : SHAPES[o.shape].pts); let b = [Infinity, Infinity, -Infinity, -Infinity];
       for (const [x, y] of P) b = [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)]; const ys = o.ys || 1; return [b[0] * o.size, b[1] * o.size * ys, b[2] * o.size, b[3] * o.size * ys]; }
-    case 'prism': { const g = prismGeo(o); return [-g.h / 3, -g.b / 2, 2 * g.h / 3, g.b / 2]; }
     case 'ball': return [-o.r, -o.r, o.r, o.r];
     case 'lens': { const e1 = sag(o.c1, o.D / 2), e2 = sag(o.c2, o.D / 2); return [Math.min(-o.t / 2, -o.t / 2 + e1), -o.D / 2, Math.max(o.t / 2, o.t / 2 + e2), o.D / 2]; }
   }
@@ -11718,6 +11833,12 @@ function boxHandles(o) {
   const b = localBox(o); if (!b) return null;
   const [x0, y0, x1, y1] = b, xm = (x0 + x1) / 2, ym = (y0 + y1) / 2, H = [];
   const add = (id, k, lx, ly) => { const [x, y] = toW(o, lx, ly); H.push({ id, k, x, y }); };
+  if (o.type === 'ball') { add('br', 'v', o.r * Math.SQRT1_2, -o.r * Math.SQRT1_2); return H; }          // a sphere: one node on its edge
+  if (o.type === 'lens') {                       // a lens: its faces (curvature), its rim (diameter) and a rotate knob, no box
+    const h = o.D / 2, rx = (sag(o.c1, h) + sag(o.c2, h)) / 2;
+    add('f1', 'n', -o.t / 2, 0); add('f2', 'n', o.t / 2, 0); add('eT', 'v', rx, -h); add('eB', 'v', rx, h); add('rot', 'r', rx, -h - 30 / V.z);
+    H.stem = [toW(o, rx, -h), toW(o, rx, -h - 30 / V.z)]; return H;
+  }
   add('cLT', 'c', x0, y0); add('cRT', 'c', x1, y0); add('cRB', 'c', x1, y1); add('cLB', 'c', x0, y1);
   if (BOX_FREE[o.type]) { add('eL', 'e', x0, ym); add('eR', 'e', x1, ym); add('eT', 'e', xm, y0); add('eB', 'e', xm, y1); }
   if (o.type === 'lens') { add('eT', 'e', xm, y0); add('eB', 'e', xm, y1); add('f1', 'n', -o.t / 2, 0); add('f2', 'n', o.t / 2, 0); }
@@ -11743,6 +11864,7 @@ function applyBoxHandle(o, id, mx, my, e) {
     o.t = nr - nl; o.c1 = id === 'f1' ? c1 : o.c1; o.c2 = id === 'f2' ? c2 : o.c2;
     const [wx, wy] = toW(o, cx, 0); o.x = wx; o.y = wy; normObj(o); return true;
   }
+  if (id === 'br') { const r = Math.hypot(mx - o.x, my - o.y); o.r = Math.max(2, r); guides.push({ t: 'lbl', x: mx, y: my, text: 'radius ' + fmtLen(o.r), hit: false }); normObj(o); return true; }
   if (id === 'pA') {                                      // a prism's apex angle (its apex stays put)
     const g = prismGeo(o), Xa = 2 * g.h / 3, half = Math.max(2.5 * Math.PI / 180, Math.min(89.9 * Math.PI / 180, Math.atan2(Math.abs(ly), Math.max(1e-6, Xa - lx))));
     const sNew = Math.max(20, Math.hypot(Xa - lx, ly) / 0.35), hNew = sNew * Math.cos(half), [wx, wy] = toW(o, Xa - 2 * hNew / 3, 0);
@@ -11755,6 +11877,7 @@ function applyBoxHandle(o, id, mx, my, e) {
   const Cx = dxs === 'L' ? x0 : x1, Cy = dys === 'T' ? y0 : y1, lim = k => Math.max(0.02, isFinite(k) ? k : 1);
   let kx = dxs ? lim((lx - Ax) / (Cx - Ax)) : 1, ky = dys ? lim((ly - Ay) / (Cy - Ay)) : 1;
   const uniform = BOX_UNIFORM[o.type];
+  if (o.type === 'lens' && id[0] === 'e' && e.ctrlKey) kx = ky;              // Ctrl on a lens's rim: the whole lens scales, shape kept
   if (id[0] === 'c' && (uniform || e.shiftKey)) { const vx = Cx - Ax, vy = Cy - Ay; kx = ky = lim(((lx - Ax) * vx + (ly - Ay) * vy) / (vx * vx + vy * vy)); }   // along the diagonal
   switch (o.type) {
     case 'rect': case 'medium': case 'shape': if (o.type === 'shape' && o.geo === 'circle' && Math.abs(kx - ky) > 1e-9) o.geo = 'ellipse';   // a squashed circle is an ellipse
@@ -11787,7 +11910,8 @@ function handles(o) {
     case 'mirror': case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': return [{ id: 'p1', x: o.x1, y: o.y1 }, { id: 'p2', x: o.x2, y: o.y2 }];
     case 'thing': return [{ id: 'ts', x: o.x + Math.cos(o.a) * o.size * 1.15, y: o.y + Math.sin(o.a) * o.size * 1.15 }];
     case 'rect': case 'medium': case 'shape': { const c = Math.cos(o.a), s = Math.sin(o.a); return [{ id: 'aw', x: o.x + c * o.w / 2, y: o.y + s * o.w / 2 }, { id: 'h', x: o.x - s * o.h / 2, y: o.y + c * o.h / 2 }]; }
-    case 'prism': { const g = prismGeo(o), d = 2 * g.h / 3 + 20 / V.z; return [{ id: 'as', x: o.x + g.u[0] * d, y: o.y + g.u[1] * d }, { id: 'ps', x: g.p[1][0], y: g.p[1][1] }]; }
+    case 'prism': { const P = prismGeo(o).p, ap = P[0], L = Math.hypot(ap[0] - o.x, ap[1] - o.y) || 1, r = { id: 'rot', k: 'r', x: ap[0] + (ap[0] - o.x) / L * 30 / V.z, y: ap[1] + (ap[1] - o.y) / L * 30 / V.z };
+      const H = [...P.map((q, i) => ({ id: 'v' + i, k: 'v', x: q[0], y: q[1] })), r]; H.stem = [ap, [r.x, r.y]]; return H; }
     case 'ball': case 'earth': case 'moon': return [{ id: 'r', x: o.x + o.r, y: o.y }];
     case 'grav': return [{ id: 'gr', x: o.x + Math.max(gravStop(o), 14 / V.z), y: o.y }];
     case 'lens': { const { W: L } = lensFrame(o), rx = Math.max(o.t / 2, o.t / 2 + sag(o.c2, o.D / 2)) + 22 / V.z, a = L(rx, 0), b = L(0, o.D / 2); return [{ id: 'la', x: a[0], y: a[1] }, { id: 'lD', x: b[0], y: b[1] }]; }
@@ -11796,8 +11920,62 @@ function handles(o) {
   }
   return [];
 }
+/* ---------- a prism's corner nodes ----------
+   Drag a corner to reshape the triangle; it snaps to an equilateral triangle, a symmetric (isosceles) one, and right-angled
+   ones (Alt turns snapping off). Ctrl-drag a corner to scale the whole prism about its centre, keeping its shape. The knob
+   beyond the apex rotates it about its centre. */
+function prismAngles(o) {
+  const P = prismGeo(o).p, ang = i => { const a = P[i], b = P[(i + 1) % 3], c = P[(i + 2) % 3], u = [b[0] - a[0], b[1] - a[1]], w = [c[0] - a[0], c[1] - a[1]];
+    return Math.acos(Math.max(-1, Math.min(1, (u[0] * w[0] + u[1] * w[1]) / (Math.hypot(...u) * Math.hypot(...w) || 1)))); };
+  return [0, 1, 2].map(ang);
+}
+// set the prism from three world corners (apex first), symmetric about the apex → apex angle + side, otherwise corners
+function setPrismCorners(o, W3) {
+  const cx = (W3[0][0] + W3[1][0] + W3[2][0]) / 3, cy = (W3[0][1] + W3[1][1] + W3[2][1]) / 3, d = (i, j) => Math.hypot(W3[i][0] - W3[j][0], W3[i][1] - W3[j][1]);
+  const mx = (W3[1][0] + W3[2][0]) / 2, my = (W3[1][1] + W3[2][1]) / 2, a = Math.atan2(W3[0][1] - my, W3[0][0] - mx);
+  const side1 = -(W3[1][0] - cx) * Math.sin(a) + (W3[1][1] - cy) * Math.cos(a);          // corner 1 on the +v side, as the symmetric form draws it
+  o.x = cx; o.y = cy;
+  if (Math.abs(d(0, 1) - d(0, 2)) < 1e-7 * (d(0, 1) + d(0, 2)) && side1 > 0) { o.a = a; o.s = d(0, 1); o.A = 2 * Math.asin(Math.min(1, d(1, 2) / 2 / o.s)); delete o.tv; return; }
+  const c = Math.cos(o.a), sn = Math.sin(o.a);
+  o.tv = W3.map(([x, y]) => [c * (x - cx) + sn * (y - cy), -sn * (x - cx) + c * (y - cy)]);
+  o.A = prismAngles(o)[0]; o.s = (d(0, 1) + d(0, 2)) / 2;                                 // for the inspector: the apex angle and mean side
+}
+function applyPrismHandle(o, id, mx, my, e) {
+  const free = e.altKey || !snapOn, P = prismGeo(o).p.map(q => q.slice()), C = [o.x, o.y];
+  if (id === 'rot') {                                     // turn about the centre, the apex following the pointer
+    const a0 = Math.atan2(P[0][1] - C[1], P[0][0] - C[0]), s = snapAngle(Math.atan2(my - C[1], mx - C[0]), free, o);
+    o.a += wrapPi(s.a - a0); angLabel(mx, my, s); normObj(o); return true;
+  }
+  if (id[0] !== 'v') return false;
+  const i = +id[1], A = P[(i + 1) % 3], B = P[(i + 2) % 3];
+  if (e.ctrlKey) {                                        // scale the whole prism about its centre, shape unchanged
+    const rx = P[i][0] - C[0], ry = P[i][1] - C[1], r = Math.hypot(rx, ry) || 1, k = Math.max(0.05, ((mx - C[0]) * rx + (my - C[1]) * ry) / (r * r));
+    if (o.tv) o.tv = o.tv.map(q => [q[0] * k, q[1] * k]); o.s *= k;
+    guides.push({ t: 'lbl', x: mx, y: my, text: `× ${k.toFixed(2)} · ${o.tv ? 'mean side' : 'side'} ${fmtLen(o.s)}`, hit: true }); normObj(o); return true;
+  }
+  let q = [mx, my];
+  const L = Math.hypot(B[0] - A[0], B[1] - A[1]) || 1, nx = -(B[1] - A[1]) / L, ny = (B[0] - A[0]) / L, mid = [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2];
+  const hgt = (mx - mid[0]) * nx + (my - mid[1]) * ny, sd = Math.sign(hgt) || 1;
+  if (!free) {
+    const tol = 9 / V.z, at = (x, y, name) => ({ x, y, name, d: Math.hypot(x - mx, y - my) });
+    // exact shapes (points): equilateral, and the symmetric right-angled 45°–90°–45°
+    const pts = [at(mid[0] + sd * nx * L * Math.sqrt(3) / 2, mid[1] + sd * ny * L * Math.sqrt(3) / 2, 'equilateral (60° · 60° · 60°)'),
+      at(mid[0] + sd * nx * L / 2, mid[1] + sd * ny * L / 2, 'right-angled and symmetric (45° · 90° · 45°)')];
+    // families (lines and a circle): symmetric about this corner; a right angle here (Thales' circle); a right angle at a neighbour
+    const dm = Math.hypot(mx - mid[0], my - mid[1]) || 1, fam = [at(mid[0] + nx * hgt, mid[1] + ny * hgt, 'symmetric (isosceles)'),
+      at(mid[0] + (mx - mid[0]) / dm * L / 2, mid[1] + (my - mid[1]) / dm * L / 2, 'a right angle at this corner'),
+      ...[A, B].map(Q => { const t = (mx - Q[0]) * nx + (my - Q[1]) * ny; return at(Q[0] + nx * t, Q[1] + ny * t, 'a right angle at the next corner'); })];
+    const best = [pts, fam].map(G => G.filter(c => c.d < tol).sort((a, b) => a.d - b.d)[0]).find(Boolean);
+    if (best) { q = [best.x, best.y]; guides.push({ t: 'lbl', x: q[0], y: q[1], text: best.name, hit: true }); }
+  }
+  if (Math.abs((A[0] - q[0]) * (B[1] - q[1]) - (A[1] - q[1]) * (B[0] - q[0])) < 2e-3 * L * L) return true;   // stays a real triangle
+  P[i] = q; setPrismCorners(o, P);
+  if (!guides.some(g => g.t === 'lbl')) guides.push({ t: 'lbl', x: q[0], y: q[1], text: prismAngles(o).map(a => (Math.round(deg(a) * 10) / 10) + '°').join(' · '), hit: false });
+  normObj(o); return true;
+}
 function applyHandle(o, id, mx, my, free, ev) {
   if (ev && id === 'mb') { applyMirrorNode(o, mx, my, ev); return; }
+  if (ev && o.type === 'prism' && applyPrismHandle(o, id, mx, my, ev)) return;
   if (ev && localBox(o) && applyBoxHandle(o, id, mx, my, ev)) return;
   const dx = mx - (o.x ?? 0), dy = my - (o.y ?? 0), perp = () => Math.abs(-dx * Math.sin(o.a) + dy * Math.cos(o.a));
   const rot = () => { const s = snapAngle(Math.atan2(dy, dx), free, o); o.a = s.a; angLabel(mx, my, s); };
@@ -12152,6 +12330,7 @@ function cleanObjs(list) {
         if (c.shape === 'custom' ? !okPts : !(c.shape in SHAPES)) c.shape = 'box'; if (c.shape !== 'custom') delete c.pts; if (!(c.surf in SURF_KIND)) c.surf = 'matte'; }
       if (c.note) { const n = c.note; if (!n || typeof n !== 'object' || typeof n.text !== 'string' || !n.text) delete c.note;
         else c.note = Object.assign({ ...NOTE_DEFAULT }, Object.fromEntries(Object.entries(n).filter(([k, v]) => k in NOTE_DEFAULT && typeof v === typeof NOTE_DEFAULT[k] && (typeof v !== 'number' || isFinite(v))))); }
+      if (c.type === 'prism' && 'tv' in c && !(Array.isArray(c.tv) && c.tv.length === 3 && c.tv.every(q => Array.isArray(q) && q.length === 2 && q.every(Number.isFinite)))) delete c.tv;
       if (c.type === 'shape') { if (!(c.geo in GEOS)) c.geo = 'circle'; if (!(c.made in MADE)) c.made = 'glass'; if (!('mat' in c)) c.mat = 'bk7'; c.w = Math.abs(c.w) || 1; c.h = Math.abs(c.h) || 1; }
       if (c.type === 'grav') { if (c.kind !== 'body') c.kind = 'bh'; c.M = Math.max(1e-30, Math.abs(c.M)); c.r = Math.abs(c.r) || 1; }
       normObj(c); return c; });
@@ -12463,7 +12642,10 @@ function syncBar() {
   if (S.waveOnly) { hint.textContent = !navigator.gpu ? 'Double-slit scenes draw light as a wave on the graphics card (WebGPU: Chrome or Edge). Screens still show the exact pattern.'
       : WAVE.build && WAVE.build.warn ? 'Light reaches a free end of a wall or slit barrier: bending around that edge is not calculated there. Make the barrier longer than the light, or close the shape.'
       : 'The light as a wave: every pattern is the exact Huygens–Fresnel sum over the openings, with real interference and diffraction.'; return; }
-  hint.textContent = sel && localBox(sel) ? 'Corners resize (Shift keeps proportions, Ctrl from the centre, Alt no snap), edges stretch, the green knob rotates' + (handles(sel).some(h => h.k === 'n') ? ', yellow nodes change the shape.' : '.') + ' Hover the ? by Snap for all tips.'
+  hint.textContent = sel && localBox(sel) && !['lens', 'ball'].includes(sel.type) ? 'Corners resize (Shift keeps proportions, Ctrl from the centre, Alt no snap), edges stretch, the green knob rotates' + (handles(sel).some(h => h.k === 'n') ? ', yellow nodes change the shape.' : '.') + ' Hover the ? by Snap for all tips.'
+    : sel && sel.type === 'lens' ? 'Drag a yellow node to change that face’s curvature, a round node on the rim to change the diameter (Ctrl keeps the lens’s proportions); the green knob rotates.'
+    : sel && sel.type === 'ball' ? 'Drag the node on its edge to change the sphere’s radius.'
+    : sel && sel.type === 'prism' ? 'Drag a corner to reshape the prism (it snaps to equilateral, symmetric and right-angled; Alt turns snapping off). Ctrl-drag a corner to resize it keeping its shape; the green knob rotates.'
     : sel && sel.type === 'mirror' ? 'Drag the ends to move them, the yellow node to bend the mirror. Angles snap every 45° and to beams; Shift moves freely.'
     : sel ? 'Parts snap to beams, lens axes and other parts’ x/y lines; angles snap every 45° and to beams. Shift moves freely.'
     : objs.length ? 'Drag parts to move them, drag empty space to pan, scroll or pinch to zoom.' : 'Add a light and some parts to start.';
@@ -12820,9 +13002,11 @@ function traceMenuLight(mx, my, G) {
   if (br) { br.max = 2; const r = () => br.value = PCFG.bright; r(); ptrUI.push(r); br.addEventListener('input', () => { PCFG.bright = +br.value; ptrSave(); ptrUI.forEach(f => f()); }); }
   if (gear) gear.addEventListener('click', () => { if (!ptrPanel) ptrPanel = makePtrPanel(); else ptrPanel.hidden = !ptrPanel.hidden; gear.setAttribute('aria-pressed', String(!ptrPanel.hidden)); });
 }
+document.addEventListener('pointerdown', e => { if (ptrPanel && !ptrPanel.hidden && !ptrPanel.contains(e.target) && !e.target.closest('#ptrGear')) { ptrPanel.hidden = true; document.getElementById('ptrGear')?.setAttribute('aria-pressed', 'false'); } });
 function makePtrPanel() {
   const d = document.createElement('div'); d.id = 'ptrPanel'; d.setAttribute('role', 'dialog'); d.setAttribute('aria-label', 'Pointer light');
-  d.style.cssText = 'position:fixed;right:14px;bottom:80px;width:340px;max-height:calc(100vh - 150px);overflow:auto;z-index:40;color:var(--ink);border-radius:14px;padding:10px 14px 12px;font-size:12px';
+  d.style.cssText = 'position:fixed;right:14px;bottom:80px;width:340px;max-height:calc(100vh - 150px);overflow:auto;overflow-x:hidden;z-index:40;color:var(--ink);border-radius:14px;padding:10px 14px 12px;font-size:12px';
+  { const g = document.getElementById('ptrGear'); if (g) { const r = g.getBoundingClientRect(); d.style.right = Math.max(8, innerWidth - r.right) + 'px'; d.style.bottom = Math.max(60, innerHeight - r.top + 10) + 'px'; } }   // just above its button
   const get = k => PCFG[k], set = (k, v) => { PCFG[k] = v; PCFG.preset = null; ptrSave(); ptrUI.forEach(f => f()); };
   const head = (t, sub) => { const h = document.createElement('div'); h.style.cssText = 'margin:10px 0 4px;padding-top:8px;border-top:1px solid var(--glass-edge,rgba(255,255,255,.12))';
     h.innerHTML = '<b style="font-size:13px">' + t + '</b>' + (sub ? '<div class="psub" style="color:var(--muted);font-size:11px;margin-top:2px">' + sub + '</div>' : ''); d.append(h); };
@@ -12839,13 +13023,17 @@ function makePtrPanel() {
     const r = () => c.value = get1(); r(); ptrUI.push(r); c.addEventListener('input', () => { set1(c.value); PCFG.preset = null; ptrSave(); ptrUI.forEach(f => f()); }); row(label, [c], null, show); };
   const lasers = () => PCFG.mode === 'lasers';
   const top = document.createElement('div'); top.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px';
-  top.innerHTML = '<b style="font-size:14px;flex:1">Pointer light</b>'; const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', 'Close'); x.style.cssText = 'padding:3px 9px;min-height:0';
+  top.innerHTML = '<b style="font-size:14px;flex:1">Pointer light</b>'; const x = document.createElement('button');
+  // the picker and the brightness, which used to sit on the bar, head the menu
+  const pk = document.getElementById('ptrLight'), bk = document.getElementById('ptrBright'); x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', 'Close'); x.style.cssText = 'padding:3px 9px;min-height:0';
   x.addEventListener('click', () => { d.hidden = true; document.getElementById('ptrGear')?.setAttribute('aria-pressed', 'false'); }); top.append(x); d.append(top);
+  if (pk) { pk.style.cssText = 'font:inherit;padding:3px 6px;border-radius:7px;color:var(--ink);max-width:180px'; row('Pointer', [pk], 'Choose a preset or one of your saved pointers'); }
+  if (bk) { bk.style.cssText = 'width:120px;accent-color:#6bb8ff'; row('Brightness', [bk], 'How bright the pointer\u2019s light is'); }
   const pr = document.createElement('div'); pr.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px';
   for (const name of Object.keys(PTR_PRESETS)) { const b = document.createElement('button'); b.type = 'button'; b.textContent = name; b.style.cssText = 'padding:4px 9px;min-height:0;font-size:11px';
     const r = () => b.setAttribute('aria-pressed', String(PCFG.preset === name)); r(); ptrUI.push(r); b.addEventListener('click', () => ptrPreset(name)); pr.append(b); }
   d.append(pr);
-  head('Your pointers', 'Save the pointer as it is now under a name. Saved ones are also in the picker in the bar.');
+  head('Your pointers', 'Save the pointer as it is now under a name. Saved ones are also in the Pointer picker at the top.');
   { const line = document.createElement('div'); line.style.cssText = 'display:flex;gap:6px;margin:4px 0';
     const nm = document.createElement('input'); nm.type = 'text'; nm.placeholder = 'Name'; nm.maxLength = 40; nm.style.cssText = 'flex:1;min-width:0;font:inherit;padding:5px 8px;border-radius:8px;border:1px solid var(--glass-edge);background:transparent;color:var(--ink)';
     const sv = document.createElement('button'); sv.type = 'button'; sv.textContent = 'Save'; sv.style.cssText = 'min-height:0;padding:5px 12px';
@@ -13965,6 +14153,15 @@ function resize() {
   dirty = true; placePanel();
 }
 new ResizeObserver(resize).observe(bench);
+// The bar is laid out at its natural size, then scaled (CSS zoom) to fit the width the window would have at 16:9 or its real
+// width, whichever is wider: on a 16:9 or wider screen everything fits without scrolling; on a narrower one it scrolls.
+function fitBar() {
+  const bar = document.querySelector('nav.bar'); if (!bar) return;
+  bar.style.zoom = 1; const natural = bar.scrollWidth, avail = bar.clientWidth; if (!(natural > 0 && avail > 0)) return;
+  const room = Math.max(avail, avail * (innerHeight * 16 / 9) / innerWidth), z = Math.max(0.55, Math.min(1, room / natural));
+  bar.style.zoom = z.toFixed(4);
+}
+addEventListener('resize', fitBar); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBar); setTimeout(fitBar, 0); setTimeout(fitBar, 600);
 resize(); syncBar();
 (function loop(now) { for (const h of FRAME_HOOKS) if (h(now ?? performance.now())) dirty = true; if (dirty && W > 0) render(); requestAnimationFrame(loop); })();
 /* ===== Up-close view: atoms of the material and a light wave passing through ===== */
