@@ -52,6 +52,7 @@ canvas#c{display:block;touch-action:none}
 .gmenu[hidden]{display:none}
 .smenu{position:fixed;width:330px;max-width:calc(100vw - 24px);max-height:min(70vh,540px);overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--btn-line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28);padding:6px 14px 14px;z-index:5}
 .smenu[hidden]{display:none}
+.smenu.pop{z-index:42}          /* an open pop-up menu sits above Newton the tutor (40), whose bubble and face take clicks */
 #lmenu .wrow[hidden],#wavebtn[hidden],#wavehide[hidden]{display:none!important}
 #wavehide{margin:4px 0 10px;font-size:12px;opacity:.75}
 .pop .gopt{margin-top:12px}
@@ -208,6 +209,8 @@ button svg{width:16px;height:16px;flex-shrink:0}
         <button id="visonly" type="button" aria-pressed="true" aria-labelledby="lvis">On</button></div>
       <div class="gopt"><div><b id="lgphys">GPU Physics</b><p id="gphysnote">Run the long, repetitive parts of the ray tracing on the graphics card: light bending through Earth’s air and around black holes. The rest of the tracing stays spread over the processor’s cores.</p></div>
         <button id="gphys" type="button" aria-pressed="true" aria-labelledby="lgphys">On</button></div>
+      <div class="gopt"><div><b id="lfps">FPS counter</b><p>Show how many frames a second the bench draws, how long each takes, and (in Wave View) how long the wave picture took to compute. It reads “idle” when nothing is moving, since the bench only redraws when something changes.</p></div>
+        <button id="fpsbtn" type="button" aria-pressed="false" aria-labelledby="lfps">Off</button></div>
       <div class="gopt"><div><b id="lgpu">GPU Rendering</b><p id="gpunote">Draw the rays on the graphics card. All rays are sent to it once after each change, so panning and zooming cost almost nothing, and faint rays add up exactly instead of being rounded away. Ray tracing itself stays on the processor.</p></div>
         <button id="gpu" type="button" aria-pressed="true" aria-labelledby="lgpu">On</button></div>
     </div>
@@ -261,8 +264,11 @@ button svg{width:16px;height:16px;flex-shrink:0}
         <option value="lens">Lens focus</option>
         <option value="slits">Double slit</option>
         <option value="slitsnew">New double-slit bench</option>
+        <option value="guide">Light in a glass light-guide (waves)</option>
+        <option value="mstar">Mirror star interference (waves)</option>
         <option value="pool">Pool with a fish</option>
         <option value="film">Thin film colors</option>
+        <option value="bubbles">Soap bubbles</option>
         <option value="hlamp">Hydrogen lamp spectrum</option>
         <option value="eclipse">Blood moon (lunar eclipse)</option>
         <option value="blackhole">Black hole lensing</option>
@@ -326,6 +332,8 @@ button svg{width:16px;height:16px;flex-shrink:0}
       <div class="aitems" data-cat="light" hidden>
         <button type="button" class="aitem" data-add="source"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="3.5" fill="currentColor"/></svg>Light</button>
         <button type="button" class="aitem" data-add="polarizer"><svg viewBox="0 0 16 16"><path d="M8 1.5v13" stroke="currentColor" stroke-width="2.2"/><path d="M5 4h6M5 7h6M5 10h6M5 13h6" stroke="currentColor" stroke-width="1"/></svg>Polarizer</button>
+        <button type="button" class="aitem" data-add="film" title="A thin film, like soap or oil: its colours come from the light reflected off its two faces"><svg viewBox="0 0 16 16"><defs><linearGradient id="fgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd36b"/><stop offset=".35" stop-color="#d36bff"/><stop offset=".65" stop-color="#5fb4ff"/><stop offset="1" stop-color="#7cf0a0"/></linearGradient></defs><path d="M8 1.5v13" stroke="url(#fgr)" stroke-width="2.4" stroke-linecap="round"/></svg>Thin film</button>
+        <button type="button" class="aitem" data-add="bubble" title="A soap bubble: a thin film that drains, thin at the top and thick at the bottom"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.6" fill="none" stroke="url(#fgr)" stroke-width="1.6"/><circle cx="6" cy="6" r="1.1" fill="currentColor" opacity=".7"/></svg>Soap bubble</button>
         <button type="button" class="aitem" data-add="slit"><svg viewBox="0 0 16 16"><path d="M8 1v5M8 7.5v1M8 10v5" stroke="currentColor" stroke-width="3"/></svg>Slits</button>
       </div>
       <div class="aitems" data-cat="measure" hidden>
@@ -668,6 +676,8 @@ function normObj(o) {
   if (o.type === 'mirror') o.bend = LEVEL && LEVEL.flat ? 0 : Math.max(-0.95, Math.min(0.95, o.bend || 0));      // a level can keep its mirrors flat
   if (o.type === 'prism' && !o.tv) o.A = Math.max(5 * Math.PI / 180, Math.min(179.9 * Math.PI / 180, o.A));
   if (o.type === 'rect' && 'h2' in o && !(o.h2 > 0)) delete o.h2;
+  if (o.type === 'film') { o.d1 = Math.max(0, Math.min(5000, o.d1)); o.d2 = Math.max(0, Math.min(5000, o.d2)); }
+  if (o.type === 'bubble') { o.r = Math.max(1e-6, o.r); o.dTop = Math.max(0, Math.min(5000, o.dTop)); o.dBot = Math.max(0, Math.min(5000, o.dBot)); o.swirl = Math.max(0, Math.min(1, o.swirl || 0)); }
   if (o.type === 'shape') {
     if (o.geo === 'circle') o.h = o.w;
     if (o.made === 'slits') { if (!SLIT_GEOS.includes(o.geo)) o.made = 'wall'; o.round = 0; o.hollow = false; o.N = Math.max(1, Math.min(slitMax(), Math.round(o.N ?? 2))); o.sw = o.sw ?? 0.2; o.d = o.d ?? 1; }
@@ -695,6 +705,8 @@ function buildPrims() {
         break;
       }
       case 'block': case 'slit': case 'screen': case 'polarizer': seg(o.x1, o.y1, o.x2, o.y2, o.type, o); break;
+      case 'film': seg(o.x1, o.y1, o.x2, o.y2, 'film', o); break;
+      case 'bubble': arc(o.x, o.y, o.r, 1, 'film', o, null); break;
       case 'rect': case 'prism': case 'medium': case 'thing': {
         const p = polyOf(o), kind = o.type === 'thing' ? SURF_KIND[o.surf] : 'glass';
         let area = 0; for (let i = 0; i < p.length; i++) { const a = p[i], b = p[(i + 1) % p.length]; area += a[0] * b[1] - b[0] * a[1]; }
@@ -769,7 +781,7 @@ const PAINTS = { white: [[380, 0.75], [750, 0.75]], red: [[380, 0.05], [570, 0.0
   black: [[380, 0.04], [750, 0.04]] };
 function objBox(o) {
   const pts = o.type === 'lens' ? lensPoly(o) : o.type === 'mirror' ? [...mirrorPts(o), [o.x1, o.y1], [o.x2, o.y2]]
-    : o.type === 'ball' ? [[o.x - o.r, o.y - o.r], [o.x + o.r, o.y + o.r]]
+    : o.type === 'ball' || o.type === 'bubble' ? [[o.x - o.r, o.y - o.r], [o.x + o.r, o.y + o.r]]
     : o.type === 'earth' || o.type === 'moon' ? (r => [[o.x - r, o.y - r], [o.x + r, o.y + r]])(o.r + (o.type === 'earth' && o.atm !== false ? ATM_TOP * KM() : 0))
     : o.type === 'grav' ? (r => [[o.x - r, o.y - r], [o.x + r, o.y + r]])(gravStop(o))
     : 'x1' in o ? [[o.x1, o.y1], [o.x2, o.y2]] : polyOf(o);
@@ -1027,6 +1039,33 @@ function filmStack(P, hp, px, py, dx, dy, n0, lam, lamPx, thin) {
   out.r = [dx - 2 * c0 * vx, dy - 2 * c0 * vy];
   return out;
 }
+// Film parts (a sheet of film, or a soap bubble): a free-standing film, the same medium on both sides, drawn as a line but
+// treated as a layer d nm thick. Its reflection and transmission are Airy's sums over every bounce inside it:
+//   r = r01 (1 - e^{2iβ}) / (1 - r01² e^{2iβ}),  t = (1 - r01²) e^{iβ} / (1 - r01² e^{2iβ}),  β = 2π n_f d cos θ_f / λ,
+// for s and p separately (|r|² + |t|² = 1: a clear film loses nothing). The thickness can change across the part:
+// a sheet tapers from end 1 to end 2; a bubble drains, thin at the top and thick at the bottom, with swirls between.
+function filmD(o, x, y) {
+  if (o.type === 'bubble') {
+    const r = o.r || 1, ux = (x - o.x) / r, uy = (y - o.y) / r, t = Math.max(0, Math.min(1, (1 + uy) / 2)), th = Math.atan2(uy, ux);
+    let d = o.dTop + (o.dBot - o.dTop) * t ** 1.6;
+    if (o.swirl) d *= 1 + o.swirl * 0.55 * Math.sin(Math.PI * t) * Math.sin(3 * th + 5 * t + (o.ph || 0)) * Math.cos(2 * th - 3 * t);
+    return Math.max(0, d);
+  }
+  const ex = o.x2 - o.x1, ey = o.y2 - o.y1, l2 = ex * ex + ey * ey, u = l2 ? Math.max(0, Math.min(1, ((x - o.x1) * ex + (y - o.y1) * ey) / l2)) : 0;
+  return Math.max(0, o.d1 + (o.d2 - o.d1) * u);
+}
+function filmRT(n0, nf, c0, dNm, lam) {
+  const sf2 = (n0 / nf) ** 2 * (1 - c0 * c0);
+  if (sf2 >= 1) return { rs: [1, 0], rp: [1, 0], ts: [0, 0], tp: [0, 0] };          // trapped in a film thinner than the outside (rare)
+  const cf = Math.sqrt(1 - sf2), b = 2 * Math.PI * nf * dNm * cf / lam, e2 = [Math.cos(2 * b), Math.sin(2 * b)], e1 = [Math.cos(b), Math.sin(b)], out = {};
+  for (const [k, r] of [['s', (n0 * c0 - nf * cf) / (n0 * c0 + nf * cf)], ['p', (nf * c0 - n0 * cf) / (nf * c0 + n0 * cf)]]) {
+    const r2 = r * r, den = [1 - r2 * e2[0], -r2 * e2[1]], dd = den[0] * den[0] + den[1] * den[1];
+    const nr = [r * (1 - e2[0]), -r * e2[1]], nt = [(1 - r2) * e1[0], (1 - r2) * e1[1]];
+    out['r' + k] = [(nr[0] * den[0] + nr[1] * den[1]) / dd, (nr[1] * den[0] - nr[0] * den[1]) / dd];
+    out['t' + k] = [(nt[0] * den[0] + nt[1] * den[1]) / dd, (nt[1] * den[0] - nt[0] * den[1]) / dd];
+  }
+  return out;
+}
 const jMul = (J, a, b) => [J[0] * a[0] - J[1] * a[1], J[0] * a[1] + J[1] * a[0], J[2] * b[0] - J[3] * b[1], J[2] * b[1] + J[3] * b[0]];   // s and p times complex amplitudes
 // Ideal thin lens: every ray heading in direction d meets the chief ray (through C) on the focal plane.
 function thinLens(dx, dy, px, py, cx, cy, ux, uy, f) {
@@ -1125,6 +1164,18 @@ function* traceG(P, ox, oy, dx, dy, lam, lamPx, J, opl, far, onHit, kids, depth,
         const qx = m[0] + (m[2] - m[0]) * u, qy = m[1] + (m[3] - m[1]) * u, l = Math.hypot(qx, qy) || 1; nx = qx / l; ny = qy / l;
       } } else { nx = (px - hp.cx) / hp.r * hp.sgn; ny = (py - hp.cy) / hp.r * hp.sgn; }
     if (kind === 'polarizer') { if (!S.simple) { const e0 = jE(J); J = jPolarize(J, hp.obj.chi * Math.PI / 180); mark(); if (T) T.abs(hp.obj, e0 - jE(J)); if (jE(J) < 1e-14 * Eref) { done = true; break; } } ox = px; oy = py; continue; }
+    if (kind === 'film') {                      // a thin film: part of the light is reflected, the rest goes straight on
+      const nf = S.simple ? null : matN(hp.obj, lam);
+      if (nf > 0) {
+        let c0 = -(dx * nx + dy * ny), sx = nx, sy = ny; if (c0 < 0) { c0 = -c0; sx = -nx; sy = -ny; }
+        const F = filmRT(n, nf, Math.min(1, c0), filmD(hp.obj, px, py), lam), Jr = jMul(J, F.rs, F.rp);
+        if (!(kids && depth < 3 && jE(Jr) > 1e-5 * Eref)) { if (T) T.lost(jE(Jr)); }
+        else kids.push({ ox: px, oy: py, dx: dx + 2 * c0 * sx, dy: dy + 2 * c0 * sy, J: Jr, opl, depth: depth + 1, sig, how: 'r', from: hp.obj });
+        J = jMul(J, F.ts, F.tp); mark();
+        if (jE(J) < 1e-14 * Eref) { done = true; break; }
+      }
+      ox = px; oy = py; continue;
+    }
     if (kind === 'ideal') { [dx, dy] = thinLens(dx, dy, px, py, hp.cx, hp.cy, hp.ux, hp.uy, hp.f); ox = px; oy = py; continue; }
     if (kind === 'idealMirror') {
       const d = dx * nx + dy * ny; dx -= 2 * d * nx; dy -= 2 * d * ny;
@@ -1942,6 +1993,7 @@ fn aperture(l: u32, c: u32, Q: vec2f, k: f32) -> F3 {
   let P = vec2f(u.x0 + (f32(ix) + 0.5) * u.ps, u.y0 + (f32(iy) + 0.5) * u.ps);
   let tile = (iy / 16u) * u.tX + ix / 16u;
   var col = vec3f(0.0); var zr = vec2f(0.0); var zg = vec2f(0.0); var zb = vec2f(0.0); var dm = vec3f(0.0);
+  var gcol: array<vec3f, 6>;                 // with music: the light of each group of lines (a light, a band of colours)
   for (var l = 0u; l < u.nL; l++) {
     var cu: array<vec2f, MC>; var ck: array<vec2f, MC>; var cs: array<f32, MC>; var ct: array<f32, MC>; var m = 0u; var extra = 0.0; var crest = vec2f(0.0);
     let k0 = LC[l * 4u + 3u];
@@ -1949,11 +2001,14 @@ fn aperture(l: u32, c: u32, Q: vec2f, k: f32) -> F3 {
     let t = tile * u.nL + l;
     for (var e = TO[t]; e < TO[t + 1u]; e++) {
       let b = TI[e] * 16u; let S = vec2f(PC[b], PC[b + 1u]); let d = vec2f(PC[b + 2u], PC[b + 3u]);
-      let rel = P - S; let z = dot(rel, d); if (z < 0.0 || z >= PC[b + 4u]) { continue; }
+      let rel = P - S; let z = dot(rel, d);
+      // cut along its two end planes (the surfaces it meets), each faded across one cell so a slanted face stays smooth
+      let n0 = vec2f(cos(PC[b + 14u]), sin(PC[b + 14u])); let n1 = vec2f(cos(PC[b + 15u]), sin(PC[b + 15u]));
+      let cov = clamp(0.5 + dot(rel, n0) / u.ps, 0.0, 1.0) * clamp(0.5 - dot(rel - d * PC[b + 4u], n1) / u.ps, 0.0, 1.0); if (cov <= 0.0) { continue; }
       let xi = dot(rel, vec2f(-d.y, d.x)); if (abs(xi) > PC[b + 11u]) { continue; }
       let k = PC[b + 5u]; let qs = vec2f(PC[b + 6u], PC[b + 7u]); let q = qs + vec2f(z, 0.0); let inv = cdiv(vec2f(1.0, 0.0), q);
       let ex = 0.5 * k * xi * xi * vec2f(-inv.y, inv.x); if (ex.x < -12.0) { continue; }
-      let w = cmul(cmul(vec2f(PC[b + 8u], PC[b + 9u]), csqrt(cdiv(qs, q))), cis(k * z + ex.y)) * exp(ex.x);
+      let w = cmul(cmul(vec2f(PC[b + 8u], PC[b + 9u]), csqrt(cdiv(qs, q))), cis(k * z + ex.y)) * (exp(ex.x) * cov);
       crest += length(w) * cis(PC[b + 10u] + PC[b + 13u] / u.X * z);
       // the beamlet's main direction and its natural spread Θ = 2/(k·w₀) (w₀ its waist, from q = z − i·z_R)
       if (m < MC) { cu[m] = w; ck[m] = d; ct[m] = 2.0 / (k * sqrt(max(2.0 * -qs.y / k, 1e-30))); cs[m] = dot(w, w); m++; } else { extra += dot(w, w); }
@@ -1976,6 +2031,7 @@ fn aperture(l: u32, c: u32, Q: vec2f, k: f32) -> F3 {
       for (var j = i + 1u; j < m; j++) { let a = max(0.0, length(ck[i] - ck[j]) - 2.5 * max(ct[i], ct[j])); I += 2.0 * sinc(0.5 * k0 * a * u.ps) * dot(cu[i], cu[j]); } }
     I = max(I, 0.0);
     col += vec3f(LC[l * 4u], LC[l * 4u + 1u], LC[l * 4u + 2u]) * I;
+    if (u.p1 > 0u) { let g = min(u32(LC[u.nL * 4u + l]), 5u); gcol[g] += vec3f(LC[l * 4u], LC[l * 4u + 1u], LC[l * 4u + 2u]) * I; }
     // this color's crests (its own wavelength, drawn X times longer), faded where they would be under ~6–12 screen px
     // apart (cells are 2 px); the modulation is 1 − a/2 + (a/2)·cos(θ − ωt), summed over colors per channel
     let gap = 2.0 * u.X * (2.0 * PI / k0) / u.ps; let amp = 0.88 * clamp((gap - 6.0) / 6.0, 0.0, 1.0);
@@ -1983,6 +2039,7 @@ fn aperture(l: u32, c: u32, Q: vec2f, k: f32) -> F3 {
     zr += cc.x * ph; zg += cc.y * ph; zb += cc.z * ph; dm += cc;
   }
   rgb[id] = vec4f(col, 0.0);
+  if (u.p1 > 0u) { for (var g = 0u; g < u.p1; g++) { rgb[u.nx * u.ny + id * u.p1 + g] = vec4f(gcol[g], 0.0); } }
   if (u.crest > 0u) { cr[id * 3u] = vec4f(zr, zg); cr[id * 3u + 1u] = vec4f(zb, dm.x, dm.y); cr[id * 3u + 2u] = vec4f(dm.z, 0.0, 0.0, 0.0); }
 }`;
 const WGSL_HUY = `
@@ -2285,6 +2342,37 @@ function makeScene(name, W, H) {
       { type: 'ruler', x1: L.x, y1: y, x2: sx, y2: y },
     ];
   }
+  if (name === 'guide') {
+    // Wave View, a few wavelengths across: a green laser goes into the end of a thin strip of glass at 60°, bends to 35° from
+    // the strip inside it, and strikes the long sides at 55°, past the critical angle (41°): it is totally reflected,
+    // again and again, and zigzags along the strip as along an optical fibre. Where an upward pass and a downward pass
+    // overlap, the two waves add: a lattice of bright and dark stripes, λ/(2n·sin 35°) apart (about half a wavelength).
+    // Its edges spread as it goes (it is only a few wavelengths wide), so the lattice grows into the patterns a fibre's
+    // modes make. The 4% reflected at the entrance shows too, as does the light leaking out where the strip ends.
+    const lamPx = u / 42; S.scale = lamPx / 532e-6;                       // the wavelength is u/42 pixels
+    const T = 0.24 * u, x0 = W * 0.12, x1 = W * 0.985, n = sellN('bk7', 532), ti = 35 * Math.PI / 180, ae = Math.asin(n * Math.sin(ti));
+    const yh = cy + 0.05 * u, d = 0.16 * u;
+    return [
+      { type: 'rect', x: (x0 + x1) / 2, y: cy, w: x1 - x0, h: T, a: 0, mat: 'bk7', locked: true },
+      { type: 'source', x: x0 - Math.cos(ae) * d, y: yh + Math.sin(ae) * d, a: -ae, w: 0.085 * u, mode: 'beam', white: false, lam: 532, rays: 24, bare: true },
+    ];
+  }
+  if (name === 'mstar') {
+    // Wave View, a few wavelengths across: one green laser, folded by four small mirrors into a five-pointed star. The mirrors
+    // sit on a circle, each square to its radius, so a beam running along a chord of the circle is turned onto the next
+    // chord of the star (a circle's chords meet its tangents at equal angles). The beam comes in through the gap at the top
+    // and leaves through it again after its fifth pass. All five passes are the same light, so where they cross they
+    // interfere: two passes make stripes, and in the middle all five overlap and make a fivefold pattern of bright spots
+    // that never quite repeats (as in a quasicrystal).
+    const lamPx = u / 40; S.scale = lamPx / 532e-6;
+    const R = 0.42 * u, C = [cx, cy + 0.03 * u], ph = m => -Math.PI / 2 + m * 4 * Math.PI / 5, Pt = m => [C[0] + R * Math.cos(ph(m)), C[1] + R * Math.sin(ph(m))];
+    const L = [], half = 0.3 * R;
+    for (let m = 1; m <= 4; m++) { const [px, py] = Pt(m), t = [-Math.sin(ph(m)), Math.cos(ph(m))];
+      L.push({ type: 'mirror', x1: px - t[0] * half, y1: py - t[1] * half, x2: px + t[0] * half, y2: py + t[1] * half, bend: 0, showF: false, locked: true }); }
+    const P0 = Pt(0), P1 = Pt(1), dl = Math.hypot(P1[0] - P0[0], P1[1] - P0[1]), dv = [(P1[0] - P0[0]) / dl, (P1[1] - P0[1]) / dl], back = 0.22 * R;
+    L.push({ type: 'source', x: P0[0] - dv[0] * back, y: P0[1] - dv[1] * back, a: Math.atan2(dv[1], dv[0]), w: 0.62 * R, mode: 'beam', white: false, lam: 532, rays: 24, bare: true });
+    return L;
+  }
   if (name === 'slitsnew') return [{ type: 'source', x: W * 0.07, y: cy, a: 0, w: 30, mode: 'beam', white: false, lam: 532, rays: 24 }];
   if (name === 'slits') {
     return [
@@ -2296,13 +2384,25 @@ function makeScene(name, W, H) {
   if (name === 'film') {
     // a soap film (water) 20 nm thick at the left, 1.2 µm at the right: the thinnest part reflects almost nothing (black),
     // then white, yellow, purple, blue, green... as the film thickens
-    const film = { type: 'rect', x: cx, y: cy + u * 0.16, w: u * 0.4, h: 20e-6 * S.scale, h2: 1.2e-3 * S.scale, a: 0, mat: 'water' };
+    const film = { type: 'film', x: cx, y: cy + u * 0.16, x1: cx - u * 0.2, y1: cy + u * 0.16, x2: cx + u * 0.2, y2: cy + u * 0.16, d1: 20, d2: 1200, mat: 'water', fm: 'soap' };
     const D = u * 0.4, s2 = Math.SQRT1_2, hs = u * 0.17;
     return [
       { type: 'source', x: film.x - D * s2, y: film.y - D * s2, a: Math.PI / 4, w: u * 0.3, mode: 'beam', white: true, lam: 532, rays: 40, pol: 'none', chi: 0 },
       film,
       { type: 'screen', x1: film.x + D * s2 - hs * s2, y1: film.y - D * s2 - hs * s2, x2: film.x + D * s2 + hs * s2, y2: film.y - D * s2 + hs * s2, coh: true },
     ];
+  }
+  if (name === 'bubbles') {
+    // soap bubbles in a sunbeam. Each bubble is a film a few hundred nanometres thick that drains as it floats: black at the
+    // top where it is thinnest, then silver, gold, magenta, blue and green in rings to the thick bottom, stirred by swirls.
+    // The colours on the bubbles are the film's own (worked out once for each thickness and reused); the light is a real
+    // beam, and every glint it throws off a bubble is coloured by the film exactly where it struck.
+    const B = [[-0.27, -0.12, 0.13, 30, 900, 0.6], [0.02, -0.2, 0.09, 60, 700, 0.4], [0.24, -0.05, 0.15, 20, 1100, 0.7], [-0.08, 0.13, 0.11, 80, 800, 0.5],
+      [0.17, 0.22, 0.07, 120, 600, 0.3], [-0.33, 0.2, 0.06, 150, 650, 0.4], [0.38, -0.27, 0.05, 200, 500, 0.3]];
+    const L = B.map(([x, y, r, dTop, dBot, sw], i) => ({ type: 'bubble', x: cx + x * u, y: cy + y * u, r: r * u, dTop, dBot, swirl: sw, ph: i * 1.7, mat: 'water', fm: 'soap' }));
+    const a = Math.PI / 2 + 0.5, d = 0.62 * u;
+    L.unshift({ type: 'source', x: cx - Math.cos(a) * d, y: cy - Math.sin(a) * d, a, w: 0.9 * u, mode: 'beam', white: true, lam: 532, rays: 60, pol: 'none', chi: 0, reflCut: 0.1, bare: true });   // only the bright glints: colours a film reflects strongly
+    return L;
   }
   if (name === 'hlamp') {
     const sc = makeScene('prism', W, H); sc[0] = { ...sc[0], kind: 'lamp', el: 'H', white: false, w: u * 0.012, rays: 10 }; return sc;
@@ -2664,7 +2764,7 @@ function makeScene(name, W, H) {
    cave to a plant; the score is how much light reaches its leaf and how closely that light's spectrum matches sunlight. */
 var LEVEL = null;
 // what each part the player adds costs; null = not allowed in levels
-const PART_COST = { mirror: 10, block: 5, screen: 0, ruler: 0, label: 0, polarizer: 10, slit: 10, rect: 20, ball: 20, prism: 25, lens: 30,
+const PART_COST = { mirror: 10, block: 5, screen: 0, ruler: 0, label: 0, polarizer: 10, slit: 10, film: 15, bubble: 15, rect: 20, ball: 20, prism: 25, lens: 30,
   shape: 20, thing: 20, medium: 40, source: null, earth: null, moon: null, grav: null };
 // a puppet dragon rearing up, in unit coordinates (y down): used by the shadow-puppets level, as the puppet and as the outline on the sheet
 const DRAGON = [[0, -1], [0.25, -0.92], [0.45, -0.86], [0.3, -0.75], [0.18, -0.62], [0.55, -0.5], [0.9, -0.6], [0.7, -0.3], [0.4, -0.1], [0.6, 0.25], [0.45, 0.6], [0.2, 0.75], [0.35, 1],
@@ -9475,7 +9575,7 @@ const cv = $('c'), ctx = cv.getContext('2d'), bench = $('bench'), hint = $('hint
 const V = { z: 1, x: 0, y: 0 };   // view: screen = world × z + (x, y)
 let guides = [], snapOn = true;
 let W = 0, H = 0, dpr = 1, sel = null, drag = null, dirty = true, scene = 'prism', updaters = [];
-const NAMES = { shape: 'Shape', mirror: 'Mirror', block: 'Wall', rect: 'Glass block', prism: 'Prism', ball: 'Sphere', lens: 'Lens', source: 'Light', slit: 'Slits', screen: 'Screen', ruler: 'Ruler', medium: 'Medium', thing: 'Object', polarizer: 'Polarizer', earth: 'Earth', moon: 'Moon', grav: 'Gravity lens' };
+const NAMES = { shape: 'Shape', mirror: 'Mirror', block: 'Wall', rect: 'Glass block', prism: 'Prism', ball: 'Sphere', lens: 'Lens', source: 'Light', slit: 'Slits', screen: 'Screen', ruler: 'Ruler', medium: 'Medium', thing: 'Object', polarizer: 'Polarizer', film: 'Thin film', bubble: 'Soap bubble', earth: 'Earth', moon: 'Moon', grav: 'Gravity lens' };
 const isLine = o => 'x1' in o;
 const deg = r => r * 180 / Math.PI;
 
@@ -9512,6 +9612,8 @@ function addObj(type) {
     ruler: { type, x1: x - u * 0.15, y1: y, x2: x + u * 0.15, y2: y },
     medium: { type, x: c0[0], y: c0[1], w: u * 0.7, h: u * 0.4, a: 0, mat: 'water' },
     polarizer: { type, ...vline, chi: 0 },
+    film: { type, ...vline, d1: 300, d2: 300, mat: 'water', fm: 'soap' },
+    bubble: { type, x, y, r: u * 0.1, dTop: 40, dBot: 1000, swirl: 0.5, mat: 'water', fm: 'soap' },
     earth: { type, x: c0[0], y: c0[1], r: EARTH_R_KM * K, atm: true, haze: 0.05, cloud: 0 },
     moon: { type, x: E ? E.x + MOON_DIST_KM * K : c0[0], y: E ? E.y : c0[1], r: MOON_R_KM * K },
     // with an Earth: a big Sun far to its left, aimed at it, its beam just covering the Earth and its air; else a small lab sun
@@ -9650,7 +9752,7 @@ $('bundo').addEventListener('click', undoBuild); $('bdone').addEventListener('cl
 
 // Wave View belongs to the Double slit scene (and scenes saved from it); everywhere else the light is drawn as rays.
 let waveScene = false;
-const WAVE_SCENES = ['slits', 'slitsnew', 'lvl:fringes'];   // (and the Seven fringes level)
+const WAVE_SCENES = ['slits', 'slitsnew', 'lvl:fringes', 'guide', 'mstar'];   // (and the Seven fringes level)
 const hasSlits = list => list.some(o => o.type === 'slit' || (o.type === 'shape' && o.made === 'slits'));
 // A double-slit scene shows the light only as a wave (never as rays); slits exist only in such scenes.
 function setWaveScene(on) {
@@ -9676,7 +9778,7 @@ function loadScene(name) {
     });
     return;
   }
-  scene = name; LEVEL = LEVELS[name] || null; S.maxB = LEVEL && LEVEL.maxB || 60; newtonTutor(LEVEL); if (LEVEL) showMenu(false); V.z = 1; V.x = V.y = 0; objs = makeScene(name, W, H); S.tally = objs.some(o => o.capture || o.photon); S.films = LEVEL && LEVEL.films ? (typeof LEVEL.films === 'number' ? LEVEL.films : 20 * 550e-6 * S.scale) : 0; setExposure(name === 'eclipse' ? ECLIPSE_EXPOSURE : 1); setWaveScene(WAVE_SCENES.includes(name) || !!(LEVEL && LEVEL.wave)); if (name === 'eclipse' || (LEVEL && LEVEL.fit)) fitView();
+  scene = name; LEVEL = LEVELS[name] || null; S.maxB = LEVEL && LEVEL.maxB || 60; newtonTutor(LEVEL); if (LEVEL) showMenu(false); V.z = 1; V.x = V.y = 0; objs = makeScene(name, W, H); S.tally = objs.some(o => o.capture || o.photon); S.films = LEVEL && LEVEL.films ? (typeof LEVEL.films === 'number' ? LEVEL.films : 20 * 550e-6 * S.scale) : 0; setExposure(name === 'eclipse' ? ECLIPSE_EXPOSURE : name === 'bubbles' ? 0.5 : 1); setWaveScene(WAVE_SCENES.includes(name) || !!(LEVEL && LEVEL.wave)); if (name === 'eclipse' || (LEVEL && LEVEL.fit)) fitView();
   lastKey = ''; lastSyncMs = 0; $('scale').value = S.scale; $('scene').value = scene; select(null); dirty = true;   // new objects need a fresh simulation for their readings
 }
 // Several parts can be selected (Shift- or Ctrl-click to add or remove one, Shift-drag a box on empty space, Ctrl+A for all):
@@ -9808,6 +9910,9 @@ const niceStep = v => { const a = Math.abs(v); return !a || !isFinite(a) ? 1 : M
 const fmtNum = v => isFinite(v) ? String(Number((+v).toPrecision(5))) : '∞';
 const mmOf = px => px / S.scale, pxOf = mm => mm * S.scale;
 const viewMaxPx = () => 4 * (W + H) / V.z;
+// what a film part can be made of (its index is all that matters to its colours; the bubble's soap water is water's)
+const FILM_MATS = { soap: { name: 'Soap water', mat: 'water' }, oil: { name: 'Oil (on a puddle)', nd: 1.47, V: 40 }, mgf2: { name: 'Magnesium fluoride (lens coating)', nd: 1.378, V: 106 },
+  pmma: { name: 'Plastic (acrylic)', mat: 'pmma' }, glass: { name: 'Glass', mat: 'bk7' }, tio2: { name: 'Titanium dioxide (pearl coating)', nd: 2.4, V: 12 } };
 const toCustom = o => { if (o.mat !== 'custom') { const m = matOf(o); o.nd = m.nd; o.V = m.V; o.mat = 'custom'; } };
 // A length in mm, stored in pixels; slider on a log scale by default.
 function lenField(label, get, set, opt = {}) {
@@ -10080,6 +10185,25 @@ function fieldsFor(o) {
       break;
     }
     case 'ruler': F.push(...lineFields(o, false)); break;
+    case 'film': case 'bubble': {
+      if (S.simple) F.push({ t: 'note', text: 'Simple mode leaves out waves, so a film shows no colours: switch Simple off to see them.' });
+      F.push({ t: 'select', label: 'Film made of', opts: Object.entries(FILM_MATS).map(([k, m]) => [k, m.name]).concat(o.fm in FILM_MATS ? [] : [['', 'Your own']]),
+        get: () => o.fm in FILM_MATS ? o.fm : '', set: v => { const m = FILM_MATS[v]; if (!m) return; o.fm = v; if (m.mat) { o.mat = m.mat; delete o.nd; delete o.V; } else { o.mat = 'custom'; o.nd = m.nd; o.V = m.V; } }, rebuild: true });
+      F.push({ t: 'num', label: 'Refractive index', unit: '', get: () => matOf(o).nd, set: v => { if (v >= 1) { toCustom(o); o.nd = v; o.fm = ''; } }, slider: true, min: 1, max: 2.6 });
+      const nm = (label, k) => ({ t: 'num', label, unit: 'nm', get: () => o[k], set: v => { if (v >= 0) o[k] = v; }, slider: true, min: 0, max: 2000, step: () => 5 });
+      F.push({ t: 'head', text: 'Thickness' });
+      if (o.type === 'film') {
+        F.push(nm('At end 1', 'd1'), nm('At end 2', 'd2'), { t: 'button', label: 'Make it even (end 2 = end 1)', run: () => { o.d2 = o.d1; dirty = true; refreshInspector(); } });
+        F.push({ t: 'note', text: 'A film thinner than about 30 nm looks black: the light off its back face, turned over, cancels the light off its front. Thicker, it runs through white, gold, purple, blue and green, then pales again past about 1.5 µm. A wedge (different ends) shows them all as stripes.' });
+        F.push(...lineFields(o));
+      } else {
+        F.push(nm('At the top', 'dTop'), nm('At the bottom', 'dBot'),
+          { t: 'num', label: 'Swirls', unit: '', get: () => o.swirl, set: v => { o.swirl = Math.max(0, Math.min(1, v)); }, slider: true, min: 0, max: 1 });
+        F.push({ t: 'note', text: 'A bubble drains: the soap runs down, so the film thins at the top (where it turns black just before it pops) and thickens at the bottom, and the colour bands lie in rings between. Swirls stir the bands, as air currents do.' });
+        F.push(lenField('Radius', () => o.r, v => o.r = v), ...posFields(o));
+      }
+      break;
+    }
     case 'polarizer':
       if (S.simple) F.push({ t: 'note', text: 'Polarization is ignored in simple mode, so this filter lets everything through.' });
       else {
@@ -10215,6 +10339,15 @@ function eqsFor(o) {
       if (o.surf === 'dark') E.push({ d: 'Absorber: every ray that hits it stops', f: `${I_('I')}<sub>out</sub> = 0` });
       if (o.surf === 'glass') { E.push(SNELL); E.push({ d: 'Critical angle', f: `${I_('θ')}<sub>c</sub> = arcsin ${frac(1, I_('n'))}`, v: n() > 1 ? `= ${dg(Math.asin(1 / n()))}` : 'None' }); }
       break;
+    case 'film': case 'bubble': {
+      const nf = matOf(o).nd, d = o.type === 'film' ? (o.d1 + o.d2) / 2 : (o.dTop + o.dBot) / 2;
+      E.push({ d: 'Two reflections, one from each face, meet again', f: `Δ = 2 ${I_('n')}<sub>f</sub> ${I_('d')} cos ${I_('θ')}<sub>f</sub> + ${frac(I_('λ'), 2)}`,
+        v: `the extra half wave: the front reflection (air into film) flips over, the back one (film into air) does not. With n = ${nf.toFixed(3)} and d = ${Math.round(d)} nm (its average), straight on: 2nd = ${Math.round(2 * nf * d)} nm` });
+      E.push({ d: 'Colours made brightest, straight on', f: `${I_('λ')} = ${frac('2' + I_('n') + '<sub>f</sub>' + I_('d'), I_('m') + ' − ½')}`,
+        v: [1, 2, 3, 4].map(m => 2 * nf * d / (m - 0.5)).filter(l => l >= 380 && l <= 750).map(l => Math.round(l) + ' nm').join(', ') || 'none in the visible: the film looks black (too thin) or pale (too thick)' });
+      E.push({ d: 'Every bounce inside the film added (Airy)', f: `${I_('r')} = ${frac(I_('r') + '<sub>01</sub>(1 − ' + I_('e') + '<sup>2' + I_('iβ') + '</sup>)', '1 − ' + I_('r') + '<sub>01</sub>² ' + I_('e') + '<sup>2' + I_('iβ') + '</sup>')}`, v: 'β = 2π n<sub>f</sub> d cos θ<sub>f</sub> ÷ λ, for s and p light separately' });
+      break;
+    }
     case 'polarizer':
       if (S.simple) break;
       E.push({ d: 'Malus’s law', f: `${I_('I')} = ${I_('I')}<sub>0</sub> cos²(${I_('θ')} − ${I_('χ')})`, v: `axis χ = ${fmtNum(o.chi)}°. Unpolarized light in: I = I₀ ÷ 2.` });
@@ -10606,17 +10739,43 @@ let simBusy = false, simWant = false, refineSeq = 0;
    beamlet's ray-transfer matrix (A B; C D) through any lens, mirror, prism or glass, and from it its complex beam
    parameter q = (A q₀ + B)/(C q₀ + D), i.e. its width and wavefront curvature, and its Gouy phase. The graphics card sums
    the beamlets as waves at every pixel. Slits take the light arriving at their openings (from beamlets and from slits
-   before them) and pass it on by the Huygens–Fresnel sum. Reflections off glass and scattered light are left out. */
+   before them) and pass it on by the Huygens–Fresnel sum. Partial reflections off glass and films that carry at least
+   0.6% of a beamlet's light become beamlets of their own (two bounces deep), so a prism's inner reflections are waves
+   too and interfere like any others; light scattered by matte surfaces is left out. */
 const cx_ = (re, im) => [re, im], cmulJ = (a, b) => [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]];
 const cdivJ = (a, b) => { const d = b[0] * b[0] + b[1] * b[1]; return [(a[0] * b[0] + a[1] * b[1]) / d, (a[1] * b[0] - a[0] * b[1]) / d]; };
 const csqrtJ = a => { const r = Math.hypot(a[0], a[1]), x = Math.sqrt(Math.max(0, (r + a[0]) / 2)), y = Math.sqrt(Math.max(0, (r - a[0]) / 2)); return [x, a[1] < 0 ? -y : y]; };
 const cisJ = t => [Math.cos(t), Math.sin(t)];
-// one beamlet: centre ray + two neighbours → segments { x, y, dx, dy, len, k, q, U (complex, at the segment start), opl }
-function traceBeamlet(P, far, x, y, dx, dy, lam, k0, w0, U0, J0 = [1, 0, 0, 0]) {
-  const lamPx = lam * 1e-6 * S.scale, run = (X, Y, DX, DY) => trace(P, X, Y, DX, DY, lam, lamPx, J0, 0, far, () => {}, null, 0, 1, null);
-  const n0 = ambientN(x, y, null, lam), zr = k0 * n0 * w0 * w0 / 2, q0 = [0, -zr];
-  const D1 = 1e-3 * w0, dl = 1e-3 * 2 / (k0 * n0 * w0), cs = Math.cos(dl), sn = Math.sin(dl);
-  const c = run(x, y, dx, dy), a = run(x - dy * D1, y + dx * D1, dx, dy), b = run(x, y, dx * cs - dy * sn, dx * sn + dy * cs);
+// the phase of a Jones vector's stronger component (a beamlet's U carries it)
+const jPh = J => J[0] * J[0] + J[1] * J[1] >= J[2] * J[2] + J[3] * J[3] ? Math.atan2(J[1], J[0]) : Math.atan2(J[3], J[2]);
+// partial reflections (off glass, films) that carry at least this share of a beamlet's light are followed as beamlets of
+// their own, down to this many bounces
+const WAVE_KID_MIN = 0.006, WAVE_KID_DEPTH = 2;
+// the surface at a point of the bench (the side of a part there), as a unit normal, or null
+function surfNormalAt(P, x, y, tol) {
+  for (const q of P) {
+    if (q.k === 0) { if (distSeg(x, y, q.ax, q.ay, q.bx, q.by) < tol) return [q.nx, q.ny]; }
+    else { const r = Math.hypot(x - q.cx, y - q.cy); if (Math.abs(r - q.r) < tol && r > 0) return [(x - q.cx) / r, (y - q.cy) / r]; }
+  }
+  return null;
+}
+// one beamlet: centre ray + two neighbours → segments { x, y, dx, dy, len, k, q, U (complex, at the segment start), opl,
+// as, ae: the angles of the planes its ends are cut along: the surfaces it meets, so the light is cut cleanly along a
+// glass face rather than square to each beamlet, which left a ragged seam }. segs.kids: the beamlets of its partial
+// reflections (and theirs), each starting on the surface with the light's beam parameter, amplitude and phase there.
+// st (for those): { q: beam parameter at the start, J, amp, depth, opl0, g0, ph0, t: the surface's direction, ns: its normal }
+function traceBeamlet(P, far, x, y, dx, dy, lam, k0, w0, U0, J0 = [1, 0, 0, 0], st = null) {
+  const lamPx = lam * 1e-6 * S.scale, run = (X, Y, DX, DY, kids, depth) => trace(P, X, Y, DX, DY, lam, lamPx, st ? st.J : J0, 0, far, () => {}, kids, depth, 1, null);
+  const n0 = ambientN(x + dx * 1e-6 * (w0 || 1), y + dy * 1e-6 * (w0 || 1), null, lam), k00 = k0 * n0;
+  const q0 = st ? st.q : [0, -k00 * w0 * w0 / 2];
+  if (st) { const iq = cdivJ([1, 0], q0); w0 = Math.sqrt(2 / (k00 * iq[1])); }
+  const amp = st ? st.amp : U0 * Math.sqrt(w0), depth = st ? st.depth : 0, opl0 = st ? st.opl0 : 0, g0 = st ? st.g0 : 0, ph0 = st ? st.ph0 : 0;
+  const D1 = 1e-3 * w0, dl = 1e-3 * 2 / (k00 * w0), cs = Math.cos(dl), sn = Math.sin(dl);
+  // the neighbour offset across the beam starts on the surface for a reflection (along it, as far as makes D1 across)
+  let ax = x - dy * D1, ay = y + dx * D1;
+  if (st && st.t) { const td = st.t[0] * -dy + st.t[1] * dx; ax = x + st.t[0] * D1 / td; ay = y + st.t[1] * D1 / td; }
+  const kids = depth < WAVE_KID_DEPTH ? [] : null;
+  const c = run(x, y, dx, dy, kids, depth), a = run(ax, ay, dx, dy, null, depth), b = run(x, y, dx * cs - dy * sn, dx * sn + dy * cs, null, depth);
   const segs = []; let opl = 0, A = 1, B = 0, C = 0, D = 1, ok = true;
   const off = (p, j, P0, d, t) => {             // the neighbour's ray, seen from the plane through P0 across direction d
     const qx = p[2 * j], qy = p[2 * j + 1], ux = p[2 * j + 2] - qx, uy = p[2 * j + 3] - qy, L = Math.hypot(ux, uy); if (!(L > 0)) return null;
@@ -10635,15 +10794,41 @@ function traceBeamlet(P, far, x, y, dx, dy, lam, k0, w0, U0, J0 = [1, 0, 0, 0]) 
     let q = cdivJ([A * q0[0] + B, A * q0[1]], [C * q0[0] + D, C * q0[1]]);
     if (!ok && segs.length) { const s0 = segs[segs.length - 1]; q = [s0.q[0] + s0.len, s0.q[1]]; }
     const k = k0 * n, iq = cdivJ([1, 0], q); if (!(iq[1] > 0) || !(en > 0)) break;
-    const w = Math.sqrt(2 / (k * iq[1])), G = cdivJ([1, 0], csqrtJ([A + B * q0[0] / (q0[0] ** 2 + q0[1] ** 2), -B * q0[1] / (q0[0] ** 2 + q0[1] ** 2)]));
-    const g = Math.atan2(G[1], G[0]), mag = U0 * Math.sqrt(w0 / w) * Math.sqrt(en), ph = (k0 * opl + g + (c.ph ? (c.ph[j] || 0) - (c.ph[0] || 0) : 0)) % (2 * Math.PI);
-    const sg = { x: P0[0], y: P0[1], dx: d[0], dy: d[1], len: L, k, q, U: [mag * Math.cos(ph), mag * Math.sin(ph)], opl, w };
+    const q0m = q0[0] ** 2 + q0[1] ** 2, w = Math.sqrt(2 / (k * iq[1])), G = cdivJ([1, 0], csqrtJ([A + B * q0[0] / q0m, -B * q0[1] / q0m]));
+    const g = g0 + Math.atan2(G[1], G[0]), mag = amp / Math.sqrt(w) * Math.sqrt(en), ph = (k0 * (opl0 + opl) + g + ph0 + (c.ph ? (c.ph[j] || 0) - (c.ph[0] || 0) : 0)) % (2 * Math.PI);
+    const sg = { x: P0[0], y: P0[1], dx: d[0], dy: d[1], len: L, k, q, U: [mag * Math.cos(ph), mag * Math.sin(ph)], opl: opl0 + opl, w, g, n, jj: j };
     if (c.js) { let Jv = null; for (let i = j; i >= 0 && !Jv; i--) Jv = c.js[i]; if (Jv) sg.j = jUnit(Jv); }
     segs.push(sg);
     opl += n * L;
   }
+  // the planes the segments' ends are cut along. Between two segments: the surface there, whose normal is along
+  // n₁d₁ − n₂d₂ (Snell's law, and the law of reflection when n₁ = n₂); at the end: the part the light stops on
+  const tolOf = (X, Y) => 1e-6 * (1 + Math.abs(X) + Math.abs(Y)), along = (v, d) => { const l = Math.hypot(v[0], v[1]); if (!(l > 0)) return null;
+    let u = [v[0] / l, v[1] / l]; let cd = u[0] * d[0] + u[1] * d[1]; if (cd < 0) { u = [-u[0], -u[1]]; cd = -cd; } return cd > 0.3 ? Math.atan2(u[1], u[0]) : null; };
+  segs.forEach((sg, i) => {
+    const ax0 = Math.atan2(sg.dy, sg.dx), pv = segs[i - 1], nx = segs[i + 1];
+    sg.as = i === 0 ? (st && st.ns ? along(st.ns, [sg.dx, sg.dy]) ?? ax0 : ax0)
+      : pv.jj === sg.jj - 1 ? along([pv.n * pv.dx - sg.n * sg.dx, pv.n * pv.dy - sg.n * sg.dy], [sg.dx, sg.dy]) ?? ax0 : ax0;
+    if (nx && nx.jj === sg.jj + 1) sg.ae = along([sg.n * sg.dx - nx.n * nx.dx, sg.n * sg.dy - nx.n * nx.dy], [sg.dx, sg.dy]) ?? ax0;
+    else { const ex = sg.x + sg.dx * sg.len, ey = sg.y + sg.dy * sg.len, nn = sg.len < far * 0.5 ? surfNormalAt(P, ex, ey, tolOf(ex, ey) + 1e-9 * sg.len) : null; sg.ae = nn ? along(nn, [sg.dx, sg.dy]) ?? ax0 : ax0; }
+  });
+  // its partial reflections, each a beamlet of its own from where it leaves the surface
+  segs.kids = [];
+  if (kids) for (const kd of kids) {
+    if (kd.how !== 'r') continue;
+    const Ek = jE(kd.J) / Math.max(1e-30, jE(st ? st.J : J0)), Eabs = (st ? st.E : 1) * Ek; if (!(Eabs >= WAVE_KID_MIN)) continue;
+    const tol = tolOf(kd.ox, kd.oy), sg = segs.find(q => Math.abs(q.x + q.dx * q.len - kd.ox) + Math.abs(q.y + q.dy * q.len - kd.oy) < tol + 1e-9 * q.len); if (!sg) continue;
+    const nv = [sg.dx - kd.dx, sg.dy - kd.dy], nl = Math.hypot(nv[0], nv[1]); if (!(nl > 1e-9)) continue;
+    const nrm = [nv[0] / nl, nv[1] / nl], tg = [-nrm[1], nrm[0]]; if (Math.abs(tg[0] * -kd.dy + tg[1] * kd.dx) < 0.2) continue;      // too glancing to follow
+    const qh = [sg.q[0] + sg.len, sg.q[1]], gh = sg.g + Math.atan2(...csqrtJ(cdivJ(sg.q, qh)).slice().reverse());
+    const kb = traceBeamlet(P, far, kd.ox, kd.oy, kd.dx, kd.dy, lam, k0, null, U0, J0,
+      { q: qh, J: kd.J, amp: amp * Math.sqrt(Ek), E: Eabs, depth: depth + 1, opl0: opl0 + kd.opl, g0: gh, ph0: ph0 + jPh(kd.J) - (c.ph ? c.ph[0] || 0 : 0), t: tg, ns: nrm });
+    if (kb.length) segs.kids.push(kb, ...kb.kids);
+  }
   return segs;
 }
+// a beamlet and all its reflections' beamlets
+const withKids = segs => segs.length ? [segs, ...(segs.kids || [])] : [];
 // The polarization of a line's light arriving at (x, y) along beamlet segment sg: a ray traced back from there finds the
 // polarizers on the way, which then act, in the light's own order, on the line's starting state. null: none gets through.
 function polAt(P, far, x, y, sg, Ln) {
@@ -10703,10 +10888,12 @@ function waveBuild1(X, viewL) {
         const cap = many ? 64 : heavy ? 160 : 320; if (N > cap) { N = cap; wb = 1.5 * src.w / (N - 1); }
         const dx = Math.cos(src.a), dy = Math.sin(src.a), sp = src.w / Math.max(1, N - 1), U0 = sp / (Math.sqrt(Math.PI) * wb);
         for (let i = 0; i < N; i++) { const o = (i / Math.max(1, N - 1) - 0.5) * src.w; beams.push(traceBeamlet(P, far, src.x - dy * o, src.y + dx * o, dx, dy, l.lam, k0, wb, U0, J)); }
+        beams.nMain = beams.length; beams.push(...beams.flatMap(bl => bl.kids || []));
       } else {
         // wedges all round, each just wide enough to overlap its neighbours by half: divergence Θ = 1.5 Δθ
         const N = many ? 120 : heavy ? 240 : 480, dth = 2 * Math.PI / N, w0 = lamPx / (Math.PI * 1.5 * dth), U0 = Math.sqrt(L0) * dth / Math.sqrt(lamPx);   // so the beamlets add up to √(L0/r)
         for (let i = 0; i < N; i++) { const t = src.a + i * dth; beams.push(traceBeamlet(P, far, src.x, src.y, Math.cos(t), Math.sin(t), l.lam, k0, w0, U0, J)); }
+        beams.nMain = beams.length; beams.push(...beams.flatMap(bl => bl.kids || []));
       }
       lines.push({ lam: l.lam, k0, col: (S.simple ? SIMPLE_C : l.c).map(v => v * pw), beams, src, e: l.e * pw, pw, J });
     }
@@ -10802,14 +10989,14 @@ function slitFan(P, far, o, f, n, opens, pts, Ln, lam, st = 5) {
       // the beamlet starts with this angle's polarization; U carries its size and the stronger component's phase
       const a = Math.sqrt(a2), big = F[0] * F[0] + F[1] * F[1] >= F[2] * F[2] + F[3] * F[3], t = big ? Math.atan2(F[1], F[0]) : Math.atan2(F[3], F[2]), ur = Math.cos(t), ui = Math.sin(t);
       const segs = traceBeamlet(P, far, cx + dx * nud, cy + dy * nud, dx, dy, Ln.lam, k, w0, a * dth / lam, st > 5 ? jUnit(F) : undefined);
-      for (const sg of segs) sg.U = [sg.U[0] * ur - sg.U[1] * ui, sg.U[0] * ui + sg.U[1] * ur];
-      if (segs.length) Ln.beams.push(segs);
+      const all = withKids(segs); for (const bl of all) for (const sg of bl) sg.U = [sg.U[0] * ur - sg.U[1] * ui, sg.U[0] * ui + sg.U[1] * ur];
+      Ln.beams.push(...all);
     }
   });
 }
 // how bright the light is 10 mm out along the middle beamlet (a beam's field is ~1 across it; a bulb's falls off from there)
 function lightRef(Ln) {
-  const b0 = Ln.beams[Ln.beams.length >> 1] && Ln.beams[Ln.beams.length >> 1][0]; if (!b0) return 1e-30;
+  const mi = (Ln.beams.nMain ?? Ln.beams.length) >> 1, b0 = Ln.beams[mi] && Ln.beams[mi][0]; if (!b0) return 1e-30;
   const t = Math.min(b0.len * 0.5, 10 * S.scale), x = b0.x + b0.dx * t, y = b0.y + b0.dy * t; let re = 0, im = 0;
   for (const bl of Ln.beams) for (const sg of bl) { const r = segField(sg, x, y, 1e-6 * sg.len + 1e-9); if (r) { re += r[0]; im += r[1]; } }
   return Math.max(re * re + im * im, 1e-30);
@@ -10828,7 +11015,7 @@ function waveScreens(B) {
     const f = lineFrame(o), nb = Math.max(200, Math.min(1000, Math.round(f.L * 4))), bw = f.L / nb;
     const R = new Float64Array(nb), G = new Float64Array(nb), Bc = new Float64Array(nb), T = new Float64Array(nb), wl = []; let side = 0;
     const tol = 1e-6 * (1 + Math.abs(o.x1) + Math.abs(o.y1));
-    const mates = o.wall != null ? objs.filter(q => q.type === 'screen' && q.wall === o.wall) : [o];     // screens of one wall (wall: id) all see the light that ends anywhere on it, so a small sensor sees its neighbours' beamlets too
+    const mates = o.wall != null ? objs.filter(q => q.type === 'screen' && q.wall === o.wall) : [o], perLam = new Map();     // screens of one wall (wall: id) all see the light that ends anywhere on it, so a small sensor sees its neighbours' beamlets too
     B.lines.forEach((Ln, li) => {
       const lam = 2 * Math.PI / Ln.k0, re = new Float64Array(nb), im = new Float64Array(nb), pre = B.vec ? new Float64Array(nb) : null, pim = B.vec ? new Float64Array(nb) : null;
       for (const bl of Ln.beams) { const sg = bl[bl.length - 1]; if (!sg) continue;
@@ -10853,10 +11040,12 @@ function waveScreens(B) {
         }
       });
       // (with polarizers: s and p, which never interfere with each other, add as intensities)
-      const col = Ln.col, pw = Ln.pw ?? 1; let fl = 0; for (let j = 0; j < nb; j++) { const I = re[j] ** 2 + im[j] ** 2 + (pre ? pre[j] ** 2 + pim[j] ** 2 : 0); T[j] += I * pw; R[j] += I * col[0]; G[j] += I * col[1]; Bc[j] += I * col[2]; fl += I * bw; }
+      const col = Ln.col, pw = Ln.pw ?? 1; let fl = 0, pl = perLam.get(Ln.lam); if (!pl) perLam.set(Ln.lam, pl = { lam: Ln.lam, c: col, I: new Float64Array(nb) });
+      for (let j = 0; j < nb; j++) { const I = re[j] ** 2 + im[j] ** 2 + (pre ? pre[j] ** 2 + pim[j] ** 2 : 0); T[j] += I * pw; R[j] += I * col[0]; G[j] += I * col[1]; Bc[j] += I * col[2]; fl += I * bw; pl.I[j] += I * pw; }
       wl.push({ lam: Ln.lam, src: Ln.src, e: Ln.e, f: fl / waveFlux(Ln.src) });
     });
     setProf(o, nb, bw, R, G, Bc, T, R, G, Bc, T, side, null); o._wprof = o._prof; o._wl = wl;
+    o._lamProf = perLam.size ? { nb, bw, L: [...perLam.values()].filter(e => isVisible(e.lam)).sort((a, b) => a.lam - b.lam) } : null;
   }
 }
 const WAVE = { sceneNo: 0, key: '', bkey: '', build: null, busy: false, want: false, img: null, data: null, cv: document.createElement('canvas'), t0: performance.now() };
@@ -10895,9 +11084,12 @@ async function pumpWave() {
           const len = Math.min(Lc, t1 - z0), q = [sg.q[0] + z0, sg.q[1]], U0 = cmulJ(cmulJ(sg.U, csqrtJ(cdivJ(sg.q, q))), cisJ((sg.k * z0) % (2 * Math.PI))), U = jc ? cmulJ(U0, jc) : U0;
           const iqe = cdivJ([1, 0], [q[0] + len, q[1]]), iqs = cdivJ([1, 0], q), wr = 3.5 * Math.max(Math.sqrt(2 / (sg.k * iqs[1])), Math.sqrt(2 / (sg.k * iqe[1])));
           const sx = sg.x + sg.dx * z0, sy = sg.y + sg.dy * z0, ex = sx + sg.dx * len, ey = sy + sg.dy * len, idx = pcs.length / 16;
-          pcs.push(sx - O[0], sy - O[1], sg.dx, sg.dy, len, sg.k, q[0], q[1], U[0], U[1], ((Ln.k0 * (sg.opl + sg.k / Ln.k0 * z0)) / X) % (2 * Math.PI), wr, li, sg.k, 0, 0);
-          const gx0 = Math.max(0, Math.floor((Math.min(sx, ex) - wr - vx0) / ps / 16)), gx1 = Math.min(tX - 1, Math.floor((Math.max(sx, ex) + wr - vx0) / ps / 16));
-          const gy0 = Math.max(0, Math.floor((Math.min(sy, ey) - wr - vy0) / ps / 16)), gy1 = Math.min(tY - 1, Math.floor((Math.max(sy, ey) + wr - vy0) / ps / 16));
+          // its ends: the segment's own (along the surfaces it meets) where they are, else square across the beam
+          const axA = Math.atan2(sg.dy, sg.dx), aS = z0 <= 1e-9 * sg.len && sg.as != null ? sg.as : axA, aE = z0 + len >= sg.len * (1 - 1e-9) && sg.ae != null ? sg.ae : axA;
+          const tn = a => { const c = Math.abs(Math.cos(a - axA)); return Math.sqrt(Math.max(0, 1 - c * c)) / Math.max(c, 0.3); }, wb = wr * (1 + Math.max(tn(aS), tn(aE))) + ps;
+          pcs.push(sx - O[0], sy - O[1], sg.dx, sg.dy, len, sg.k, q[0], q[1], U[0], U[1], ((Ln.k0 * (sg.opl + sg.k / Ln.k0 * z0)) / X) % (2 * Math.PI), wr, li, sg.k, aS, aE);
+          const gx0 = Math.max(0, Math.floor((Math.min(sx, ex) - wb - vx0) / ps / 16)), gx1 = Math.min(tX - 1, Math.floor((Math.max(sx, ex) + wb - vx0) / ps / 16));
+          const gy0 = Math.max(0, Math.floor((Math.min(sy, ey) - wb - vy0) / ps / 16)), gy1 = Math.min(tY - 1, Math.floor((Math.max(sy, ey) + wb - vy0) / ps / 16));
           for (let ty = gy0; ty <= gy1; ty++) for (let tx = gx0; tx <= gx1; tx++) { const key = (ty * tX + tx) * nL + li; let a = bins.get(key); if (!a) bins.set(key, a = []); a.push(idx); }
         }
       }
@@ -10911,30 +11103,53 @@ async function pumpWave() {
     GL.forEach(({ li0 }, li) => B.slits.forEach((o, c) => { const e = B.em[li0][c]; if (!e) return; const start = E.length / 4; let lo = Infinity, hi = -Infinity;
       for (let i = 0; i < e.pts.length; i += 5) { E.push(c, e.pts[i + 2], e.pts[i + 3], e.pts[i + 4]); lo = Math.min(lo, e.pts[i + 2]); hi = Math.max(hi, e.pts[i + 2]); }
       LS.set([0, e.crest, e.n[0], e.n[1], start, E.length / 4 - start], (li * nS + c) * 8); SL[c * 8 + 4] = Math.max(SL[c * 8 + 4], hi - lo); }));
-    const LC = new Float32Array(nL * 4); GL.forEach(({ Ln }, i) => LC.set([Ln.col[0], Ln.col[1], Ln.col[2], Ln.k0], i * 4));
+    // with music playing, the lines are split into up to WAVE_NG groups (each light's colours in bands), kept apart so the
+    // music can brighten each group every frame without recomputing the field (see composeWave)
+    const NG = LIVE && !INTRO ? WAVE_NG : 0, grp = NG ? waveGroups(GL.map(g => g.Ln), NG) : null;
+    const LC = new Float32Array(nL * 4 + (NG ? nL : 0)); GL.forEach(({ Ln }, i) => { LC.set([Ln.col[0], Ln.col[1], Ln.col[2], Ln.k0], i * 4); if (NG) LC[nL * 4 + i] = grp[i]; });
     const Ob = new Float32Array(Math.max(1, B.obs.length) * 8); B.obs.forEach((o, i) => Ob.set([o.x1 - O[0], o.y1 - O[1], o.x2 - O[0], o.y2 - O[1], o.owner], i * 8));
     const uni = new ArrayBuffer(64), dv = new DataView(uni);
-    [nx, ny, tX, nL, nS, S.crests ? 1 : 0, B.obs.length].forEach((v, i) => dv.setUint32(i * 4, v, true));
+    [nx, ny, tX, nL, nS, S.crests ? 1 : 0, B.obs.length, NG].forEach((v, i) => dv.setUint32(i * 4, v, true));
     [x0w - O[0], y0w - O[1], ps, X].forEach((v, i) => dv.setFloat32(32 + i * 4, v, true));
     try {
-      const [rgb, cr] = await GPUPHYS.wave(uni, [new Float32Array(pcs), TO, TI, SL, LS, new Float32Array(E), LC, Ob], [nx * ny * 16, S.crests ? nx * ny * 48 : 16], nx * ny);
+      const [rgb, cr] = await GPUPHYS.wave(uni, [new Float32Array(pcs), TO, TI, SL, LS, new Float32Array(E), LC, Ob], [nx * ny * 16 * (1 + NG), S.crests ? nx * ny * 48 : 16], nx * ny);
       let cs = null;
       if (S.crests) cs = cr;                                  // per pixel: crest sums Zr, Zg, Zb (complex) and their weights
       if (sceneNo !== WAVE.sceneNo) continue;              // another scene was loaded meanwhile
-      WAVE.data = { nx, ny, x0w, y0w, ps, rgb, cs, cols: GL.map(g => g.Ln.col), nL, pieces: pcs.length / 16, sceneNo };
+      WAVE.data = { nx, ny, x0w, y0w, ps, rgb, cs, cols: GL.map(g => g.Ln.col), nL, pieces: pcs.length / 16, sceneNo, NG, grp, lines: GL.map(g => g.Ln) };
       WAVE.cv.width = nx; WAVE.cv.height = ny; WAVE.img = new ImageData(nx, ny); composeWave(); dirty = true; WAVE.end = performance.now(); WAVE.ms = WAVE.end - tw;
     } catch (e) { console.warn('Wave View failed:', e); WAVE.data = null; }
   }
   } catch (e) { console.warn('Wave View failed:', e); WAVE.data = null; WAVE.bkey = ''; dirty = true; }
   finally { WAVE.busy = false; }
 }
+// Music in Wave View: the lines (each a light's wavelength) in up to 6 groups: one light's colours in bands of the spectrum,
+// or, with many lights, one group per light. Each group's brightness follows the music as the rays' do (INTRO_GAIN by
+// colour, SRC_GAIN by light): half the group's average (each line by its share of the light), half its brightest line,
+// since a note lights a narrow band of colour and a plain average would spread it thin over the group.
+const WAVE_NG = 6;
+function waveGroups(lines, NG) {
+  const srcs = [...new Set(lines.map(L => L.src))], bands = Math.max(1, Math.floor(NG / Math.max(1, srcs.length)));
+  return lines.map(L => { const si = srcs.indexOf(L.src); if (srcs.length > NG) return si % NG;
+    return si * bands + Math.max(0, Math.min(bands - 1, Math.floor((L.lam - 380) / 370 * bands))); });
+}
+function waveGains(d) {
+  if (!d.NG || !(INTRO_GAIN || SRC_GAIN)) return null;
+  const all = objs.filter(o => o.type === 'source'), num = new Float64Array(d.NG), den = new Float64Array(d.NG), mx = new Float64Array(d.NG);
+  d.lines.forEach((L, i) => { const e = L.e || 1, si = all.indexOf(L.src);
+    const g = (INTRO_GAIN && isVisible(L.lam) ? INTRO_GAIN(L.lam) : 1) * (SRC_GAIN && SRC_GAIN[si] != null ? SRC_GAIN[si] : 1);
+    num[d.grp[i]] += e * g; den[d.grp[i]] += e; mx[d.grp[i]] = Math.max(mx[d.grp[i]], g); });
+  return Array.from(num, (v, g) => den[g] > 0 ? 0.5 * v / den[g] + 0.5 * mx[g] : 1);
+}
 // turn intensities into pixels (tone-mapped with the Exposure setting); with crests, brightness follows the moving wave
 function composeWave() {
   const d = WAVE.data; if (!d) return;
   const px = WAVE.img.data, g = 1.2 * (S.exposure ?? 1), n = d.nx * d.ny, w = 2 * Math.PI * (performance.now() - WAVE.t0) / 900, cw = Math.cos(w), sw = Math.sin(w);
+  const gn = waveGains(d), NG = d.NG, G0 = n * 4;
   for (let i = 0; i < n; i++) {
     let r, gg, b;
-    r = d.rgb[i * 4]; gg = d.rgb[i * 4 + 1]; b = d.rgb[i * 4 + 2];
+    if (gn) { r = gg = b = 0; for (let q = 0, o = G0 + i * NG * 4; q < NG; q++, o += 4) { const f = gn[q]; r += f * d.rgb[o]; gg += f * d.rgb[o + 1]; b += f * d.rgb[o + 2]; } }
+    else { r = d.rgb[i * 4]; gg = d.rgb[i * 4 + 1]; b = d.rgb[i * 4 + 2]; }
     if (d.cs) { const z = d.cs, o = i * 12;       // Σ c·I·(1 − a/2) + (a/2)·Re(Z·e^{−iωt}) per channel
       r += 0.5 * (z[o] * cw + z[o + 1] * sw - z[o + 6]); gg += 0.5 * (z[o + 2] * cw + z[o + 3] * sw - z[o + 7]); b += 0.5 * (z[o + 4] * cw + z[o + 5] * sw - z[o + 8]); }
     const k = i * 4; px[k] = 255 * (1 - Math.exp(-g * r)); px[k + 1] = 255 * (1 - Math.exp(-g * gg)); px[k + 2] = 255 * (1 - Math.exp(-g * b)); px[k + 3] = 255;
@@ -10943,10 +11158,10 @@ function composeWave() {
 }
 // drawn by render() in place of the rays
 function drawWave() {
-  const key = sceneKey() + JSON.stringify([V.z, V.x, V.y, W, H, S.waveX, S.crests]);
+  const key = sceneKey() + JSON.stringify([V.z, V.x, V.y, W, H, S.waveX, S.crests, !!(LIVE && !INTRO)]);
   if (key !== WAVE.key) requestWave(key);
   const d = WAVE.data; if (!d || d.sceneNo !== WAVE.sceneNo || !navigator.gpu) return;
-  if (d.cs) { composeWave(); dirty = true; }           // crests move: redraw every frame
+  if (d.cs || (d.NG && (INTRO_GAIN || SRC_GAIN))) { composeWave(); dirty = true; }    // crests move, or the music plays the light: redraw every frame
   ctx.save(); ctx.imageSmoothingEnabled = true; ctx.globalCompositeOperation = 'lighter';
   ctx.drawImage(WAVE.cv, d.x0w, d.y0w, d.nx * d.ps, d.ny * d.ps); ctx.restore();
 }
@@ -11289,6 +11504,52 @@ function drawSlitBar(o, k) {             // a slit barrier: the solid parts, and
   for (const c of cs) { const x = o.x1 + f.ex * c, y = o.y1 + f.ey * c; ctx.beginPath(); ctx.moveTo(x - f.nx * 7 * k, y - f.ny * 7 * k); ctx.lineTo(x + f.nx * 7 * k, y + f.ny * 7 * k); ctx.stroke(); }
   ctx.lineCap = 'round';
 }
+// The colour a film shows in white light, looked at straight on, for its index and thickness: the CIE colour of its
+// reflectance spectrum (Airy's formula), as bright as the film is (black when very thin). Worked out once per index and
+// every 2 nm, then reused, so a bubble's whole rim of colours costs a lookup per piece rather than a trace.
+const FILM_LOOK = new Map();
+function filmLook(nf, dNm) {
+  const key = Math.round(nf * 200) + ':' + Math.round(Math.min(5000, dNm) / 2); let c = FILM_LOOK.get(key); if (c) return c;
+  const r = (1 - nf) / (1 + nf), r2 = r * r, Rmax = 4 * r2 / (1 + r2) ** 2, d = Math.round(Math.min(5000, dNm) / 2) * 2, X = [0, 0, 0]; let Yw = 0;
+  for (let l = 380; l <= 780; l += 5) {
+    const b = 4 * Math.PI * nf * d / l, R = 2 * r2 * (1 - Math.cos(b)) / (1 + r2 * r2 - 2 * r2 * Math.cos(b)), m = cmf(l);
+    X[0] += R * m[0]; X[1] += R * m[1]; X[2] += R * m[2]; Yw += m[1];
+  }
+  const lin = [3.2406 * X[0] - 1.5372 * X[1] - 0.4986 * X[2], -0.9689 * X[0] + 1.8758 * X[1] + 0.0415 * X[2], 0.0557 * X[0] - 0.2040 * X[1] + 1.0570 * X[2]]
+    .map(v => Math.max(0, v / (Yw * Rmax) * 1.15));
+  const mx = Math.max(1, ...lin);
+  c = lin.map(v => { v /= mx; return Math.round(255 * (v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055)); });
+  if (FILM_LOOK.size > 20000) FILM_LOOK.clear(); FILM_LOOK.set(key, c); return c;
+}
+function drawFilm(o, k) {
+  const nf = matOf(o).nd, rgb = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
+  if (o.type === 'film') {
+    const N = 48, ex = (o.x2 - o.x1) / N, ey = (o.y2 - o.y1) / N; ctx.lineCap = 'butt';
+    for (const [w, a] of [[9, 0.18], [3.2, 1]]) { ctx.lineWidth = w * k;
+      for (let i = 0; i < N; i++) { const x = o.x1 + ex * i, y = o.y1 + ey * i; ctx.strokeStyle = rgb(filmLook(nf, filmD(o, x + ex / 2, y + ey / 2)), a);
+        ctx.beginPath(); ctx.moveTo(x - ex * 0.02, y - ey * 0.02); ctx.lineTo(x + ex * 1.02, y + ey * 1.02); ctx.stroke(); } }
+    ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(230,235,245,.35)'; ctx.lineWidth = 0.8 * k; polyPath([[o.x1, o.y1], [o.x2, o.y2]]); ctx.stroke();
+    if (sel === o) { ctx.fillStyle = 'rgba(230,220,255,.85)'; ctx.fillText(Math.round(o.d1) + ' nm', o.x1 + 8 * k, o.y1 + 4 * k); if (Math.round(o.d2) !== Math.round(o.d1)) ctx.fillText(Math.round(o.d2) + ' nm', o.x2 + 8 * k, o.y2 + 4 * k); }
+    return;
+  }
+  // a bubble: the rim in the colours its film has all round, and a faint sheen of the same colours just inside it (a bubble
+  // looks most coloured near its edge, where we look through the most film), then a window's reflection as a highlight
+  const N = 96, R = o.r, cols = [];
+  for (let i = 0; i < N; i++) { const t = (i + 0.5) / N * 2 * Math.PI; cols.push(filmLook(nf, filmD(o, o.x + R * Math.cos(t), o.y + R * Math.sin(t)))); }
+  if (ctx.createConicGradient) {
+    const g = ctx.createConicGradient(0, o.x, o.y); cols.forEach((c, i) => g.addColorStop(i / N, rgb(c, 1))); g.addColorStop(1, rgb(cols[0], 1));
+    ctx.fillStyle = g;
+    for (const [f, a] of [[0.55, 0.07], [0.8, 0.09], [0.93, 0.12]]) { ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(o.x, o.y, R, 0, 2 * Math.PI); ctx.arc(o.x, o.y, R * f, 0, 2 * Math.PI, true); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+  ctx.lineCap = 'butt';
+  for (const [w, a] of [[7, 0.2], [2.4, 1]]) { ctx.lineWidth = w * k;
+    for (let i = 0; i < N; i++) { const a0 = i / N * 2 * Math.PI; ctx.strokeStyle = rgb(cols[i], a); ctx.beginPath(); ctx.arc(o.x, o.y, R, a0 - 0.004, a0 + 2 * Math.PI / N + 0.004); ctx.stroke(); } }
+  ctx.lineCap = 'round';
+  const hx = o.x - 0.45 * R, hy = o.y - 0.5 * R, hg = ctx.createRadialGradient(hx, hy, 0, hx, hy, 0.22 * R);
+  hg.addColorStop(0, 'rgba(255,255,255,.55)'); hg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, 0.22 * R, 0, 2 * Math.PI); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.2 * k; ctx.beginPath(); ctx.arc(o.x, o.y, R * 0.8, Math.PI * 0.08, Math.PI * 0.3); ctx.stroke();
+}
 function glassShape(o) {
   if (o.type === 'shape' && o.made === 'glass') { shapePath(o); return true; }
   if (o.type === 'ball') { ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2); return true; }
@@ -11438,6 +11699,7 @@ function render() {
       for (const s of [-1, 1]) { const y = s * h, yb = conv ? y - s * d : y + s * d, tip = conv ? y : y;
         polyPath([L(-w, yb), L(0, tip), L(w, yb)]); ctx.stroke(); }
     }
+    if (o.type === 'film' || o.type === 'bubble') drawFilm(o, k);
     if (o.type === 'polarizer') {
       const f = lineFrame(o);
       ctx.strokeStyle = '#b7a4ef'; ctx.lineWidth = 3 * k; polyPath([[o.x1, o.y1], [o.x2, o.y2]]); ctx.stroke();
@@ -11821,19 +12083,19 @@ function localBox(o) {                       // the part's extent in its own fra
     case 'rect': case 'medium': case 'shape': { const h = Math.max(o.h, o.h2 || 0); return [-o.w / 2, -h / 2, o.w / 2, h / 2]; }
     case 'thing': { const P = (o.shape === 'custom' && o.pts ? o.pts : SHAPES[o.shape].pts); let b = [Infinity, Infinity, -Infinity, -Infinity];
       for (const [x, y] of P) b = [Math.min(b[0], x), Math.min(b[1], y), Math.max(b[2], x), Math.max(b[3], y)]; const ys = o.ys || 1; return [b[0] * o.size, b[1] * o.size * ys, b[2] * o.size, b[3] * o.size * ys]; }
-    case 'ball': return [-o.r, -o.r, o.r, o.r];
+    case 'ball': case 'bubble': return [-o.r, -o.r, o.r, o.r];
     case 'lens': { const e1 = sag(o.c1, o.D / 2), e2 = sag(o.c2, o.D / 2); return [Math.min(-o.t / 2, -o.t / 2 + e1), -o.D / 2, Math.max(o.t / 2, o.t / 2 + e2), o.D / 2]; }
   }
   return null;
 }
-const boxAng = o => o.type === 'ball' ? 0 : o.a;
+const boxAng = o => o.type === 'ball' || o.type === 'bubble' ? 0 : o.a;
 const toW = (o, lx, ly) => { const c = Math.cos(boxAng(o)), s = Math.sin(boxAng(o)); return [o.x + c * lx - s * ly, o.y + s * lx + c * ly]; };
 const toL = (o, x, y) => { const c = Math.cos(boxAng(o)), s = Math.sin(boxAng(o)), dx = x - o.x, dy = y - o.y; return [c * dx + s * dy, -s * dx + c * dy]; };
 function boxHandles(o) {
   const b = localBox(o); if (!b) return null;
   const [x0, y0, x1, y1] = b, xm = (x0 + x1) / 2, ym = (y0 + y1) / 2, H = [];
   const add = (id, k, lx, ly) => { const [x, y] = toW(o, lx, ly); H.push({ id, k, x, y }); };
-  if (o.type === 'ball') { add('br', 'v', o.r * Math.SQRT1_2, -o.r * Math.SQRT1_2); return H; }          // a sphere: one node on its edge
+  if (o.type === 'ball' || o.type === 'bubble') { add('br', 'v', o.r * Math.SQRT1_2, -o.r * Math.SQRT1_2); return H; }          // a sphere: one node on its edge
   if (o.type === 'lens') {                       // a lens: its faces (curvature), its rim (diameter) and a rotate knob, no box
     const h = o.D / 2, rx = (sag(o.c1, h) + sag(o.c2, h)) / 2;
     add('f1', 'n', -o.t / 2, 0); add('f2', 'n', o.t / 2, 0); add('eT', 'v', rx, -h); add('eB', 'v', rx, h); add('rot', 'r', rx, -h - 30 / V.z);
@@ -11907,7 +12169,7 @@ function handles(o) {
   const bx = boxHandles(o); if (bx) return bx;
   if (o.type === 'mirror') return [{ id: 'p1', x: o.x1, y: o.y1 }, { id: 'p2', x: o.x2, y: o.y2 }, mirrorNode(o)];
   switch (o.type) {
-    case 'mirror': case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': return [{ id: 'p1', x: o.x1, y: o.y1 }, { id: 'p2', x: o.x2, y: o.y2 }];
+    case 'mirror': case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': case 'film': return [{ id: 'p1', x: o.x1, y: o.y1 }, { id: 'p2', x: o.x2, y: o.y2 }];
     case 'thing': return [{ id: 'ts', x: o.x + Math.cos(o.a) * o.size * 1.15, y: o.y + Math.sin(o.a) * o.size * 1.15 }];
     case 'rect': case 'medium': case 'shape': { const c = Math.cos(o.a), s = Math.sin(o.a); return [{ id: 'aw', x: o.x + c * o.w / 2, y: o.y + s * o.w / 2 }, { id: 'h', x: o.x - s * o.h / 2, y: o.y + c * o.h / 2 }]; }
     case 'prism': { const P = prismGeo(o).p, ap = P[0], L = Math.hypot(ap[0] - o.x, ap[1] - o.y) || 1, r = { id: 'rot', k: 'r', x: ap[0] + (ap[0] - o.x) / L * 30 / V.z, y: ap[1] + (ap[1] - o.y) / L * 30 / V.z };
@@ -12012,7 +12274,8 @@ function distSeg(px, py, ax, ay, bx, by) {
 function hitBody(o, x, y, tol) {
   switch (o.type) {
     case 'mirror': { const p = mirrorPts(o); for (let i = 0; i < p.length - 1; i++) if (distSeg(x, y, p[i][0], p[i][1], p[i + 1][0], p[i + 1][1]) < tol) return true; return false; }
-    case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': return distSeg(x, y, o.x1, o.y1, o.x2, o.y2) < tol;
+    case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': case 'film': return distSeg(x, y, o.x1, o.y1, o.x2, o.y2) < tol;
+    case 'bubble': return Math.hypot(x - o.x, y - o.y) < o.r + tol;
     case 'rect': case 'prism': case 'medium': case 'thing': return inPoly(polyOf(o), x, y);
     case 'shape': { const P = shapeOuter(o); if (inPoly(P, x, y)) return true; for (let i = 0; i < P.length; i++) { const q = P[(i + 1) % P.length]; if (distSeg(x, y, P[i][0], P[i][1], q[0], q[1]) < tol) return true; } return false; }
     case 'lens': { if (!S.simple) return inPoly(lensPoly(o), x, y); const { W: L } = lensFrame(o), a = L(0, -o.D / 2), b = L(0, o.D / 2); return distSeg(x, y, a[0], a[1], b[0], b[1]) < tol; }
@@ -12110,7 +12373,7 @@ function snapCenter(o, c) {
 }
 function snapLineEnd(o, id, mx, my, free) {
   const Q = id === 'p1' ? [o.x2, o.y2] : [o.x1, o.y1];
-  if (!free) { const a = alignXY([mx, my], o, [[Q[0], Q[1], 'the other end']]); if (a.hit) return a.p; }
+  if (!free) { const e = snapPtToEdges([mx, my], o); if (e) return e; const a = alignXY([mx, my], o, [[Q[0], Q[1], 'the other end']]); if (a.hit) return a.p; }
   const L = Math.hypot(mx - Q[0], my - Q[1]);
   const s = snapAngle(Math.atan2(my - Q[1], mx - Q[0]), free, o), p = [Q[0] + L * Math.cos(s.a), Q[1] + L * Math.sin(s.a)];
   angLabel(p[0], p[1], s); return p;
@@ -12134,7 +12397,7 @@ function sigPoints(excl) {
         else P.push([g.M[0], g.M[1], 'mirror middle']);
         break;
       }
-      case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': {
+      case 'block': case 'slit': case 'screen': case 'ruler': case 'polarizer': case 'film': {
         const n = NAMES[o.type].toLowerCase();
         P.push([o.x1, o.y1, n + ' end'], [o.x2, o.y2, n + ' end'], [(o.x1 + o.x2) / 2, (o.y1 + o.y2) / 2, n + ' middle']); break;
       }
@@ -12172,7 +12435,67 @@ function snapRulerPt(o, id, mx, my, free) {
   let best = null, bd = tol;
   for (const p of P) { const d = Math.hypot(p[0] - mx, p[1] - my); if (d < bd) { bd = d; best = p; } }
   if (best) { guides.push({ t: 'pt', x: best[0], y: best[1], label: best[2] }); return [best[0], best[1]]; }
+  const e = snapPtToEdges([mx, my], o); if (e) return e;
   return snapLineEnd(o, id, mx, my, false);
+}
+/* ---------- edges: parts snap flush against each other's edges (both ways) ----------
+   Every part's outline as edges (a ruler's, a mirror's or a wall's line, a block's or prism's or shape's sides, a lens's
+   outline), its corners and ends, and its round sides (spheres, bubbles). A part being moved snaps when one of its corners
+   comes onto another part's edge, another part's corner comes onto one of its edges, a round side touches an edge, or two
+   corners meet; the nearest such contact within a few pixels wins, and a guide shows the edge it lies along. */
+const EDGE_LINE = new Set(['block', 'slit', 'screen', 'ruler', 'polarizer', 'film']);
+function snapGeom(o) {
+  const g = { segs: [], pts: [], circ: [], name: NAMES[o.type] ? NAMES[o.type].toLowerCase() : o.type }, poly = P => { for (let i = 0; i < P.length; i++) { const a = P[i], b = P[(i + 1) % P.length]; g.segs.push([a[0], a[1], b[0], b[1]]); } g.pts.push(...P); };
+  if (EDGE_LINE.has(o.type)) { g.segs.push([o.x1, o.y1, o.x2, o.y2]); g.pts.push([o.x1, o.y1], [o.x2, o.y2]); }
+  else if (o.type === 'mirror') { const P = mirrorPts(o); for (let i = 0; i + 1 < P.length; i++) g.segs.push([...P[i], ...P[i + 1]]); g.pts.push(P[0], P[P.length - 1]); }
+  else if (['rect', 'prism', 'medium', 'thing', 'shape'].includes(o.type)) poly(polyOf(o));
+  else if (o.type === 'lens') { if (S.simple) { const { W: L } = lensFrame(o), a = L(0, -o.D / 2), b = L(0, o.D / 2); g.segs.push([...a, ...b]); g.pts.push(a, b); } else poly(lensPoly(o)); }
+  else if (o.type === 'ball' || o.type === 'bubble') g.circ.push([o.x, o.y, o.r]);
+  return g;
+}
+const boxHit = (a, b, m) => a[0] - m <= b[2] && b[0] - m <= a[2] && a[1] - m <= b[3] && b[1] - m <= a[3];
+// the parts in mv, moved by delta: the delta that lays them against the nearest edge, or null
+function snapEdges(mv, delta) {
+  const tol = 6 / V.z, set = new Set(mv); let best = null;
+  const A = mv.map(snapGeom).map(g => ({ ...g, segs: g.segs.map(q => [q[0] + delta[0], q[1] + delta[1], q[2] + delta[0], q[3] + delta[1]]), pts: g.pts.map(q => [q[0] + delta[0], q[1] + delta[1]]), circ: g.circ.map(c => [c[0] + delta[0], c[1] + delta[1], c[2]]) }));
+  let bA = [Infinity, Infinity, -Infinity, -Infinity]; for (const o of mv) { const b = objBox(o); bA = [Math.min(bA[0], b[0] + delta[0]), Math.min(bA[1], b[1] + delta[1]), Math.max(bA[2], b[2] + delta[0]), Math.max(bA[3], b[3] + delta[1])]; }
+  const cand = (cx, cy, w, guide) => { const m = Math.hypot(cx, cy) * w; if (m < tol && (!best || m < best.m)) best = { c: [cx, cy], m, guide }; };
+  const frame = q => { const ex = q[2] - q[0], ey = q[3] - q[1], L = Math.hypot(ex, ey); return L > 0 ? { a: [q[0], q[1]], u: [ex / L, ey / L], n: [-ey / L, ex / L], L } : null; };
+  const onEdge = (f, label, at) => ({ t: 'axis', p: f.a, d: f.u, seg: f.L, at, off: 0, label });
+  for (const o of objs) {
+    if (set.has(o) || o.type === 'label' || o.type === 'source' || !boxHit(bA, objBox(o), tol)) continue;
+    const B = snapGeom(o), what = 'the ' + B.name + '’s edge';
+    for (const ga of A) {
+      for (const p of ga.pts) for (const q of B.pts) cand(q[0] - p[0], q[1] - p[1], 0.7, { t: 'pt', x: q[0], y: q[1], label: 'the ' + B.name + '’s corner' });   // corner to corner (preferred)
+      for (const q of B.segs) { const f = frame(q); if (!f) continue;                      // our corners and round sides on its edges
+        for (const p of ga.pts) { const t = (p[0] - f.a[0]) * f.u[0] + (p[1] - f.a[1]) * f.u[1]; if (t < -tol || t > f.L + tol) continue;
+          const d = (p[0] - f.a[0]) * f.n[0] + (p[1] - f.a[1]) * f.n[1]; cand(-d * f.n[0], -d * f.n[1], 1, onEdge(f, what, [p[0] - d * f.n[0], p[1] - d * f.n[1]])); }
+        for (const c of ga.circ) { const t = (c[0] - f.a[0]) * f.u[0] + (c[1] - f.a[1]) * f.u[1]; if (t < 0 || t > f.L) continue;
+          const d = (c[0] - f.a[0]) * f.n[0] + (c[1] - f.a[1]) * f.n[1], k = (d >= 0 ? c[2] : -c[2]) - d; cand(k * f.n[0], k * f.n[1], 1, onEdge(f, what, [f.a[0] + f.u[0] * t, f.a[1] + f.u[1] * t])); } }
+      for (const q of ga.segs) { const f = frame(q); if (!f) continue;                     // its corners and round sides on our edges
+        for (const p of B.pts) { const t = (p[0] - f.a[0]) * f.u[0] + (p[1] - f.a[1]) * f.u[1]; if (t < -tol || t > f.L + tol) continue;
+          const d = (p[0] - f.a[0]) * f.n[0] + (p[1] - f.a[1]) * f.n[1]; cand(d * f.n[0], d * f.n[1], 1, onEdge({ ...f, a: [f.a[0] + d * f.n[0], f.a[1] + d * f.n[1]] }, 'the ' + B.name + '’s corner', p)); }
+        for (const c of B.circ) { const t = (c[0] - f.a[0]) * f.u[0] + (c[1] - f.a[1]) * f.u[1]; if (t < 0 || t > f.L) continue;
+          const d = (c[0] - f.a[0]) * f.n[0] + (c[1] - f.a[1]) * f.n[1], k = d - (d >= 0 ? c[2] : -c[2]); cand(k * f.n[0], k * f.n[1], 1, onEdge({ ...f, a: [f.a[0] + k * f.n[0], f.a[1] + k * f.n[1]] }, 'the ' + B.name, [c[0] - (d >= 0 ? c[2] : -c[2]) * f.n[0], c[1] - (d >= 0 ? c[2] : -c[2]) * f.n[1]])); } }
+    }
+  }
+  if (!best) return null;
+  guides.push(best.guide); return [delta[0] + best.c[0], delta[1] + best.c[1]];
+}
+// a dragged end (of a ruler, a mirror, a wall…) onto the nearest edge or round side of another part
+function snapPtToEdges(p, excl) {
+  const tol = 5 / V.z; let best = null, bd = tol;
+  for (const o of objs) {
+    if (o === excl || (excl.grp && o.grp === excl.grp) || o.type === 'label' || o.type === 'source') continue;
+    const b = objBox(o); if (p[0] < b[0] - tol || p[0] > b[2] + tol || p[1] < b[1] - tol || p[1] > b[3] + tol) continue;
+    const g = snapGeom(o);
+    for (const q of g.segs) { const ex = q[2] - q[0], ey = q[3] - q[1], l2 = ex * ex + ey * ey; if (!l2) continue;
+      const t = Math.max(0, Math.min(1, ((p[0] - q[0]) * ex + (p[1] - q[1]) * ey) / l2)), x = q[0] + ex * t, y = q[1] + ey * t, d = Math.hypot(p[0] - x, p[1] - y);
+      if (d < bd) { bd = d; best = { p: [x, y], label: 'the ' + g.name + '’s edge' }; } }
+    for (const c of g.circ) { const r = Math.hypot(p[0] - c[0], p[1] - c[1]), d = Math.abs(r - c[2]); if (r > 0 && d < bd) { bd = d; best = { p: [c[0] + (p[0] - c[0]) / r * c[2], c[1] + (p[1] - c[1]) / r * c[2]], label: 'the ' + g.name + '’s edge' }; } }
+  }
+  if (!best) return null;
+  guides.push({ t: 'pt', x: best.p[0], y: best.p[1], label: best.label }); return best.p;
 }
 
 /* ---------- pointer: select, drag, pan, zoom ---------- */
@@ -12190,7 +12513,7 @@ function fitView() {
   const add = (x, y, r = 0) => { x0 = Math.min(x0, x - r); y0 = Math.min(y0, y - r); x1 = Math.max(x1, x + r); y1 = Math.max(y1, y + r); };
   for (const [x, y] of P) add(x, y);
   // whole discs of planets, moons, spheres and big Suns, not just their centres
-  for (const o of objs) { const r = o.type === 'source' ? (o.kind === 'sun' ? sunRadiusPx(o) : 0) : ['earth', 'moon', 'ball'].includes(o.type) ? o.r : o.type === 'grav' ? 1.5 * Math.sqrt(3) * gravStop(o) : 0; if (r > 0 && isFinite(r)) add(o.x, o.y, r); }
+  for (const o of objs) { const r = o.type === 'source' ? (o.kind === 'sun' ? sunRadiusPx(o) : 0) : ['earth', 'moon', 'ball', 'bubble'].includes(o.type) ? o.r : o.type === 'grav' ? 1.5 * Math.sqrt(3) * gravStop(o) : 0; if (r > 0 && isFinite(r)) add(o.x, o.y, r); }
   const pad = 70, card = LEVEL && LEVEL.fit ? 300 : 0, z = Math.max(ZMIN, Math.min(4, Math.min((W - card - 2 * pad) / Math.max(x1 - x0, 1), (H - 2 * pad) / Math.max(y1 - y0, 1))));   // card: room for the level card on the left
   V.z = z; V.x = (W + card) / 2 - (x0 + x1) / 2 * z; V.y = H / 2 - (y0 + y1) / 2 * z; dirty = true;
 }
@@ -12263,7 +12586,11 @@ cv.addEventListener('pointermove', e => {
   else {
     guides = [];
     let c = [x + drag.ox, y + drag.oy];
-    if (!free) { const g0 = guides.length; c = snapCenter(sel, c); if (guides.length === g0) c = alignXY(c, sel).p; }
+    if (!free) {                       // flush against another part's edge first; else onto its axes, or level with its key points
+      const c0 = centerOf(sel), es = snapEdges(selGroup(), [c[0] - c0[0], c[1] - c0[1]]);
+      if (es) c = [c0[0] + es[0], c0[1] + es[1]];
+      else { const g0 = guides.length; c = snapCenter(sel, c); if (guides.length === g0) c = alignXY(c, sel).p; }
+    }
     const cur = centerOf(sel), dx = c[0] - cur[0], dy = c[1] - cur[1];
     for (const q of selGroup()) { if (isLine(q)) { q.x1 += dx; q.y1 += dy; q.x2 += dx; q.y2 += dy; } else { q.x += dx; q.y += dy; } }
     cv.style.cursor = 'grabbing';
@@ -12321,7 +12648,7 @@ function cleanObjs(list) {
   if (!Array.isArray(list)) return [];
   const L = ['x1', 'y1', 'x2', 'y2'], REQ = { mirror: L, block: L, screen: L, ruler: L, polarizer: [...L, 'chi'], slit: [...L, 'N', 'sw', 'd'],
     source: ['x', 'y', 'a', 'w', 'rays'], rect: ['x', 'y', 'w', 'h', 'a'], medium: ['x', 'y', 'w', 'h', 'a'], prism: ['x', 'y', 's', 'a', 'A'],
-    shape: ['x', 'y', 'w', 'h', 'a'], ball: ['x', 'y', 'r'], lens: ['x', 'y', 'a', 'D', 't', 'c1', 'c2'], thing: ['x', 'y', 'size', 'a'], earth: ['x', 'y', 'r'], moon: ['x', 'y', 'r'], grav: ['x', 'y', 'M', 'r'] };
+    shape: ['x', 'y', 'w', 'h', 'a'], ball: ['x', 'y', 'r'], film: [...L, 'd1', 'd2'], bubble: ['x', 'y', 'r', 'dTop', 'dBot'], lens: ['x', 'y', 'a', 'D', 't', 'c1', 'c2'], thing: ['x', 'y', 'size', 'a'], earth: ['x', 'y', 'r'], moon: ['x', 'y', 'r'], grav: ['x', 'y', 'M', 'r'] };
   return list.filter(o => o && typeof o === 'object' && REQ[o.type] && REQ[o.type].every(k => typeof o[k] === 'number')
       && Object.values(o).every(v => v !== null && (typeof v !== 'number' || isFinite(v))))
     .map(o => { const c = JSON.parse(JSON.stringify(o));
@@ -12403,10 +12730,12 @@ const smenu = $('smenu');
 function popAt(menu, btn, open, w) {
   menu.hidden = !open; btn.setAttribute('aria-expanded', open); if (!open) return;
   const r = btn.getBoundingClientRect(), ww = Math.min(w, innerWidth - 24);
-  menu.style.left = Math.max(12, Math.min(innerWidth - ww - 12, r.left + r.width / 2 - ww / 2)) + 'px'; menu.style.bottom = (innerHeight - r.top + 8) + 'px';
+  const lx = r.left + r.width / 2 - ww / 2, by = innerHeight - r.top + 8;           // kept on the screen whatever the browser reports
+  menu.style.left = Math.max(12, Math.min(innerWidth - ww - 12, isFinite(lx) ? lx : 12)) + 'px'; menu.style.bottom = Math.max(8, Math.min(innerHeight - 160, isFinite(by) ? by : 70)) + 'px';
 }
 const amenu = $('amenu'), lmenu = $('lmenu');
-const showAdd = open => { if (open) markAddMenu(); return popAt(amenu, $('addBtn'), open, 440); }, showLight = open => popAt(lmenu, $('lightBtn'), open, 360);
+// the Add part menu opens even if the level's prices fail
+const showAdd = open => { if (open) { try { markAddMenu(); } catch (e) { console.warn('Add part prices:', e); } } return popAt(amenu, $('addBtn'), open, 440); }, showLight = open => popAt(lmenu, $('lightBtn'), open, 360);
 // In a level the Add part menu says what each part costs: free ones glow gold with "FREE", ones the level does not allow
 // are greyed out, ones you cannot afford say so; the categories holding free parts glow, and so does the Add part button.
 function markAddMenu() {
@@ -12436,7 +12765,12 @@ function pickCat(k) {
   for (const b of amenu.querySelectorAll('.acat')) b.setAttribute('aria-pressed', b.dataset.cat === k);
   for (const g of amenu.querySelectorAll('.aitems')) g.hidden = g.dataset.cat !== k;
 }
-for (const b of amenu.querySelectorAll('.acat')) { b.addEventListener('click', () => pickCat(b.dataset.cat)); b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') pickCat(b.dataset.cat); }); }
+// hovering a category opens it only once the pointer rests on it a moment, so crossing other categories on the way to a
+// part (a diagonal move) does not swap the list out from under the pointer; a click opens it at once
+let catHover = null;
+for (const b of amenu.querySelectorAll('.acat')) { b.addEventListener('click', () => { clearTimeout(catHover); pickCat(b.dataset.cat); });
+  b.addEventListener('pointerenter', e => { if (e.pointerType !== 'mouse') return; clearTimeout(catHover); catHover = setTimeout(() => pickCat(b.dataset.cat), 160); });
+  b.addEventListener('pointerleave', () => clearTimeout(catHover)); }
 for (const b of amenu.querySelectorAll('.aitem')) b.addEventListener('click', () => showAdd(false));
 document.addEventListener('pointerdown', e => {
   if (!amenu.hidden && !amenu.contains(e.target) && !$('addBtn').contains(e.target)) showAdd(false);
@@ -12480,7 +12814,7 @@ function showScenes(open) {
   renderSaved(sceneDir ? 'Saves every part, the scale and the view as a file.' : 'Saves every part, the scale and the view.');
   const r = $('scenesBtn').getBoundingClientRect(), w = Math.min(330, innerWidth - 24);
   smenu.style.left = Math.max(12, Math.min(innerWidth - w - 12, r.left + r.width / 2 - w / 2)) + 'px';
-  smenu.style.bottom = (innerHeight - r.top + 8) + 'px';
+  smenu.style.bottom = Math.max(8, Math.min(innerHeight - 160, innerHeight - r.top + 8)) + 'px';
   $('sname').focus(); $('sname').select();
   // opening the panel is a click, so the browser may ask for the remembered folder right away
   if (dirState === 'reconnect') reconnect().then(ok => { if (ok) refreshSceneList(); });
@@ -12642,9 +12976,10 @@ function syncBar() {
   if (S.waveOnly) { hint.textContent = !navigator.gpu ? 'Double-slit scenes draw light as a wave on the graphics card (WebGPU: Chrome or Edge). Screens still show the exact pattern.'
       : WAVE.build && WAVE.build.warn ? 'Light reaches a free end of a wall or slit barrier: bending around that edge is not calculated there. Make the barrier longer than the light, or close the shape.'
       : 'The light as a wave: every pattern is the exact Huygens–Fresnel sum over the openings, with real interference and diffraction.'; return; }
-  hint.textContent = sel && localBox(sel) && !['lens', 'ball'].includes(sel.type) ? 'Corners resize (Shift keeps proportions, Ctrl from the centre, Alt no snap), edges stretch, the green knob rotates' + (handles(sel).some(h => h.k === 'n') ? ', yellow nodes change the shape.' : '.') + ' Hover the ? by Snap for all tips.'
+  hint.textContent = sel && localBox(sel) && !['lens', 'ball', 'bubble'].includes(sel.type) ? 'Corners resize (Shift keeps proportions, Ctrl from the centre, Alt no snap), edges stretch, the green knob rotates' + (handles(sel).some(h => h.k === 'n') ? ', yellow nodes change the shape.' : '.') + ' Hover the ? by Snap for all tips.'
     : sel && sel.type === 'lens' ? 'Drag a yellow node to change that face’s curvature, a round node on the rim to change the diameter (Ctrl keeps the lens’s proportions); the green knob rotates.'
     : sel && sel.type === 'ball' ? 'Drag the node on its edge to change the sphere’s radius.'
+    : sel && sel.type === 'bubble' ? 'Drag the node on its edge to change the bubble’s size; its thicknesses are in its panel.'
     : sel && sel.type === 'prism' ? 'Drag a corner to reshape the prism (it snaps to equilateral, symmetric and right-angled; Alt turns snapping off). Ctrl-drag a corner to resize it keeping its shape; the green knob rotates.'
     : sel && sel.type === 'mirror' ? 'Drag the ends to move them, the yellow node to bend the mirror. Angles snap every 45° and to beams; Shift moves freely.'
     : sel ? 'Parts snap to beams, lens axes and other parts’ x/y lines; angles snap every 45° and to beams. Shift moves freely.'
@@ -13258,6 +13593,7 @@ let DANCE = null, KALEI = null;
    Global: speed scales every motion, sensitivity how strongly the music drives it, smoothing how quickly it follows. */
 const DANCE_DEF = {
   speed: 1, sens: 1, smooth: 0.08, beatThresh: 0.12, beatFloor: 0.25,
+  fx: { colours: true, lamps: true },                    // the light effects that play along while the parts dance
   hop: { on: true, px: 6, dir: 'alt', rise: 0.04, fall: 0.25, who: 'all' },
   glass: { on: true, band: 'cycle', mode: 'spin', amt: 1, rate: 0.6, rest: 0.15, dir: 'alt', phase: 0 },
   mirrors: { on: true, band: 'cycle', mode: 'rock', amt: 16, rate: 0.6, rest: 0.3, dir: 'alt', phase: 0 },
@@ -13274,7 +13610,16 @@ const dclone = o => JSON.parse(JSON.stringify(o));
 const dmerge = (a, b) => { for (const k in b) a[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? dmerge(a[k] || {}, b[k]) : b[k]; return a; };
 const DCFG = dmerge(dclone(DANCE_DEF), (() => { try { return JSON.parse(localStorage.getItem('raybench.dance2') || '{}'); } catch (e) { return {}; } })());
 const DOPT = DCFG;                      // older code reads DOPT
-let dancePanel = null, dancePanelShut = false;          // shut with its ✕; opens again when Dance is picked again
+let dancePanel = null, dancePanelShut = true;           // opened and shut with the bar's ♪ Dance settings button (or its ✕)
+function placeDancePanel() {                            // just above its button
+  const b = document.getElementById('danceBtn'); if (!dancePanel || !b || b.hidden) return; const r = b.getBoundingClientRect();
+  dancePanel.style.right = Math.max(8, Math.min(innerWidth - 338, innerWidth - r.right)) + 'px'; dancePanel.style.bottom = Math.max(60, innerHeight - r.top + 10) + 'px';
+}
+function setDancePanel(open) {
+  if (open && !dancePanel) dancePanel = makeDancePanel();
+  dancePanelShut = !open; if (dancePanel) { dancePanel.hidden = !open; if (open) placeDancePanel(); }
+  document.getElementById('danceBtn')?.setAttribute('aria-pressed', open ? 'true' : 'false');
+}
 function makeDancePanel() {
   const d = document.createElement('div'); d.id = 'dancePanel';
   d.style.cssText = 'position:fixed;right:14px;bottom:64px;width:330px;max-height:calc(100vh - 140px);overflow:auto;z-index:30;color:var(--ink);border-radius:12px;padding:10px 14px 12px;font-size:12px';
@@ -13296,13 +13641,16 @@ function makeDancePanel() {
     se.style.cssText = 'font:inherit;padding:2px 4px;border-radius:6px;color:var(--ink);max-width:150px'; const refresh = () => se.value = get(path);
     se.addEventListener('change', () => set(path, se.value)); refresh(); ui.push(refresh); row(label, [se], tip); };
   const t = document.createElement('div'); t.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:6px'; t.innerHTML = '<b style="font-size:14px;flex:1">Dance settings</b>';
-  const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Close (pick Dance again to reopen)'; x.setAttribute('aria-label', 'Close Dance settings'); x.style.cssText = 'padding:3px 9px;min-height:0';
-  x.addEventListener('click', () => { dancePanelShut = true; d.hidden = true; }); t.append(x); d.append(t);
+  const x = document.createElement('button'); x.type = 'button'; x.textContent = '✕'; x.title = 'Close (the ♪ Dance settings button opens it again)'; x.setAttribute('aria-label', 'Close Dance settings'); x.style.cssText = 'padding:3px 9px;min-height:0';
+  x.addEventListener('click', () => setDancePanel(false)); t.append(x); d.append(t);
   // presets
   const pr = document.createElement('div'); pr.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px';
   for (const name of [...Object.keys(DANCE_PRESETS), 'Reset']) { const b = document.createElement('button'); b.type = 'button'; b.textContent = name; b.style.cssText = 'padding:3px 8px;font-size:11px';
     b.addEventListener('click', () => { const fresh = dmerge(dclone(DANCE_DEF), name === 'Reset' ? {} : DANCE_PRESETS[name]); for (const k of Object.keys(DCFG)) delete DCFG[k]; Object.assign(DCFG, fresh); save(); ui.forEach(f => f()); }); pr.append(b); }
   d.append(pr);
+  head('Light effects', 'Besides moving the parts, the music can play the light itself. Switch these off to have the parts dance on their own.');
+  check('Colours follow the music', 'fx.colours', 'Each colour in the light brightens with the notes of its own pitch (as in the Colours mode).');
+  check('Lamps pulse with the music', 'fx.lamps', 'Each light flickers with its own band of the music (as in the Lamps mode).');
   head('Overall');
   slider('Speed', 'speed', 0.1, 4, 0.05, v => v.toFixed(2) + '×', 'Scales every motion: spin speed, rocking rate and sweeps.');
   slider('Sensitivity', 'sens', 0.2, 3, 0.05, v => v.toFixed(2) + '×', 'How strongly the music drives the motion.');
@@ -13350,7 +13698,6 @@ function musicGeometry(an, spec) {
   const now = performance.now(), dt = MUSIC.t ? Math.min(0.1, (now - MUSIC.t) / 1000) : 0.016; MUSIC.t = now;
   const M = musicBands(an, spec);
   // dance
-  if (LIVE_MODE === 'dance' && !dancePanel) dancePanel = makeDancePanel();
   if (dancePanel) dancePanel.hidden = LIVE_MODE !== 'dance' || dancePanelShut;
   if (LIVE_MODE === 'dance') {
     if (!DANCE) danceStart();
@@ -13456,16 +13803,21 @@ function lampVoices(an, spec) {
 }
 FRAME_HOOKS.push(() => {
   if (!LIVE || INTRO) { if (SRC_GAIN && !LIVE) { SRC_GAIN = null; dirty = true; } return false; }
-  INTRO_GAIN = LIVE_MODE !== 'lamps' ? relGain(introLightHeard(LIVE)) : null;
-  SRC_GAIN = LIVE_MODE !== 'colours' ? lampVoices(LIVE.an, LIVE.spec) : null;
+  const dz = LIVE_MODE === 'dance';                       // in Dance, each light effect can be switched off in its settings
+  INTRO_GAIN = LIVE_MODE !== 'lamps' && !(dz && !DCFG.fx.colours) ? relGain(introLightHeard(LIVE)) : null;
+  SRC_GAIN = LIVE_MODE !== 'colours' && !(dz && !DCFG.fx.lamps) ? lampVoices(LIVE.an, LIVE.spec) : null;
   musicGeometry(LIVE.an, LIVE.spec);
   return true;
 });
 { const sel = document.createElement('select'); sel.id = 'liveMode'; sel.title = 'How the music plays the light'; sel.hidden = true;
   sel.innerHTML = '<option value="both">Colours + lamps</option><option value="colours">Colours</option><option value="lamps">Lamps</option><option value="dance">Dance (parts move)</option><option value="kaleido">Kaleidoscope</option>';
-  sel.value = LIVE_MODE; sel.addEventListener('change', () => { LIVE_MODE = sel.value; dancePanelShut = false; if (dancePanel) dancePanel.hidden = LIVE_MODE !== 'dance' || !LIVE; try { localStorage.setItem('raybench.live.fx', LIVE_MODE); } catch (e) {} dirty = true; });
-  $('liveBtn').before(sel);
-  new MutationObserver(() => { sel.hidden = $('liveBtn').getAttribute('aria-pressed') !== 'true'; }).observe($('liveBtn'), { attributes: true, attributeFilter: ['aria-pressed'] }); }
+  const db = document.createElement('button'); db.type = 'button'; db.id = 'danceBtn'; db.hidden = true; db.textContent = '♪ Dance settings'; db.setAttribute('aria-pressed', 'false');
+  db.title = 'What dances and how, and which light effects play along'; db.addEventListener('click', () => setDancePanel(dancePanelShut));
+  const showDb = () => { db.hidden = sel.hidden || LIVE_MODE !== 'dance'; if (db.hidden && dancePanel) dancePanel.hidden = true; };
+  sel.value = LIVE_MODE; sel.addEventListener('change', () => { LIVE_MODE = sel.value; showDb(); if (dancePanel) dancePanel.hidden = LIVE_MODE !== 'dance' || !LIVE || dancePanelShut; try { localStorage.setItem('raybench.live.fx', LIVE_MODE); } catch (e) {} dirty = true; });
+  $('liveBtn').before(sel); sel.after(db);
+  new MutationObserver(() => { sel.hidden = $('liveBtn').getAttribute('aria-pressed') !== 'true'; showDb(); }).observe($('liveBtn'), { attributes: true, attributeFilter: ['aria-pressed'] });
+  addEventListener('resize', placeDancePanel); }
 FRAME_HOOKS.push(() => { if (LIGHT_HOLD !== null) { const o = objs[LIGHT_HOLD]; if (!o || o.type !== 'source' || !o.off) lightHold(objs); } return false; });      // LIGHT_FADE: the intro's light, faded out with Newton
 const INTRO_T = { fade: 0.4, lift0: 0.5, lift1: 3.0, out0: 4.1, end: 5.0 };          // seconds
 const INTRO_RING = 9;                       // seconds the held note and bass ring on after the music's last chord
@@ -14153,17 +14505,46 @@ function resize() {
   dirty = true; placePanel();
 }
 new ResizeObserver(resize).observe(bench);
-// The bar is laid out at its natural size, then scaled (CSS zoom) to fit the width the window would have at 16:9 or its real
-// width, whichever is wider: on a 16:9 or wider screen everything fits without scrolling; on a narrower one it scrolls.
+// The bar is laid out at its natural size, then scaled to fit the width the window would have at 16:9 or its real width,
+// whichever is wider: on a 16:9 or wider screen everything fits without scrolling; on a narrower one it scrolls. It is
+// scaled with a transform, not CSS zoom: browsers disagree about where things inside a zoomed element are (Safari can
+// report its buttons unscaled, which put the menus that open from them off the screen), but all agree on transforms.
 function fitBar() {
   const bar = document.querySelector('nav.bar'); if (!bar) return;
-  bar.style.zoom = 1; const natural = bar.scrollWidth, avail = bar.clientWidth; if (!(natural > 0 && avail > 0)) return;
+  Object.assign(bar.style, { zoom: '', transform: '', transformOrigin: '', width: '', marginTop: '' });
+  const natural = bar.scrollWidth, avail = bar.clientWidth, ow = bar.offsetWidth, oh = bar.offsetHeight; if (!(natural > 0 && avail > 0)) return;
   const room = Math.max(avail, avail * (innerHeight * 16 / 9) / innerWidth), z = Math.max(0.55, Math.min(1, room / natural));
-  bar.style.zoom = z.toFixed(4);
+  if (z > 0.999) return;
+  const mt = parseFloat(getComputedStyle(bar).marginTop) || 0;
+  // laid out 1/z as wide, so that scaled from its bottom-left corner it spans the same width; the height it no longer
+  // needs is handed back to the bench above it
+  Object.assign(bar.style, { transformOrigin: '0 100%', width: (ow / z) + 'px', transform: 'scale(' + z.toFixed(4) + ')', marginTop: (mt - (1 - z) * oh) + 'px' });
 }
 addEventListener('resize', fitBar); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitBar); setTimeout(fitBar, 0); setTimeout(fitBar, 600);
 resize(); syncBar();
-(function loop(now) { for (const h of FRAME_HOOKS) if (h(now ?? performance.now())) dirty = true; if (dirty && W > 0) render(); requestAnimationFrame(loop); })();
+// FPS counter (Settings): frames actually drawn in the last second, their average drawing time, and Wave View's last
+// computation; the bench draws only when something changes, so a still scene reads "idle"
+const FPS = { on: (() => { try { return localStorage.getItem('raybench.fps') === 'on'; } catch (e) { return false; } })(), t: [], ms: [], el: null, shown: 0 };
+function fpsShow() {
+  if (!FPS.el) { FPS.el = document.createElement('div'); FPS.el.id = 'fpsMeter';
+    FPS.el.style.cssText = 'position:absolute;top:10px;right:12px;z-index:6;pointer-events:none;font:600 12px/1.35 "IBM Plex Mono",ui-monospace,monospace;color:#cfe8ff;background:rgba(8,12,20,.62);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:5px 9px;text-align:right;font-variant-numeric:tabular-nums;white-space:pre';
+    bench.appendChild(FPS.el); }
+  FPS.el.hidden = !FPS.on;
+}
+function fpsTick(now) {
+  if (!FPS.on || now - FPS.shown < 250) return; FPS.shown = now;
+  while (FPS.t.length && now - FPS.t[0] > 1000) { FPS.t.shift(); FPS.ms.shift(); }
+  const n = FPS.t.length, avg = n ? FPS.ms.reduce((a, b) => a + b, 0) / n : 0;
+  FPS.el.textContent = (n ? n + ' fps · ' + avg.toFixed(1) + ' ms' : 'idle') + (S.wave && typeof WAVE !== 'undefined' && WAVE.data && WAVE.ms ? '\nwave ' + Math.round(WAVE.ms) + ' ms' : '');
+}
+setTog('fpsbtn', FPS.on); fpsShow();
+$('fpsbtn').addEventListener('click', () => { FPS.on = !FPS.on; setTog('fpsbtn', FPS.on); fpsShow(); FPS.t = []; FPS.ms = []; FPS.shown = 0; try { localStorage.setItem('raybench.fps', FPS.on ? 'on' : 'off'); } catch (e) {} });
+(function loop(now) {
+  now = now ?? performance.now();
+  for (const h of FRAME_HOOKS) if (h(now)) dirty = true;
+  if (dirty && W > 0) { const t0 = performance.now(); render(); if (FPS.on) { FPS.t.push(now); FPS.ms.push(performance.now() - t0); } }
+  fpsTick(now); requestAnimationFrame(loop);
+})();
 /* ===== Up-close view: atoms of the material and a light wave passing through ===== */
 const ELS = { C: ['#aab4c3', 5], O: ['#e8756f', 5], Al: ['#c9d1de', 5.5], Zr: ['#6fc2a8', 7], Si: ['#e0b35a', 5.5], H: ['#eef1f6', 3],
   Na: ['#b18be8', 6], K: ['#9b7be0', 7], B: ['#e89b5a', 4.5], Pb: ['#8f9bb0', 8] };
